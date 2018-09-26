@@ -13,7 +13,10 @@ class SolarPanelEnvironment {
     char* deviceLabel;
     bool pumpON = false;
     bool pumpOnPreviousValue = false;
-    unsigned long startUpMillis;
+    unsigned long startUpMillis = 0;
+    unsigned long previousMillis = 0;
+    unsigned long upTime = 0;
+    unsigned long cycleNo = 0;
 
     // current status
     Variable boilerTemp = Variable("boiler-temperature");
@@ -36,6 +39,7 @@ class SolarPanelEnvironment {
     */
     Variable systemMode = Variable("system-mode", "5");
     Variable systemRunningTime = Variable("system-running-time", "0");
+    Variable cycles = Variable("cycle-number", "0");
     Variable messages = Variable("messages");
 
     // running
@@ -66,12 +70,11 @@ class SolarPanelEnvironment {
       &solarPanelMinTemp
     };
 
-	int downloadVariablesSize = sizeof(downloadVariables) / sizeof(downloadVariables[0]);
+	  int downloadVariablesSize = sizeof(downloadVariables) / sizeof(downloadVariables[0]);
     int variableDownloadIndex = 0;
 
     float getSolarPanelTemperature();
     float getBoilerTemperature();
-    void init();
-  protected:
+    void init(unsigned long currentMillis);
 
 };

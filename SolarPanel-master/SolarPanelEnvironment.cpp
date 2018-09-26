@@ -11,7 +11,9 @@ float SolarPanelEnvironment::getBoilerTemperature() {
   return boilerTemp.getFloatValue() + alterBoilerTemp.getFloatValue();
 }
 
-void SolarPanelEnvironment::init() {
+void SolarPanelEnvironment::init(unsigned long currentMillis) {
+  startUpMillis = currentMillis;
+
   // default values
   switch (systemMode.getIntValue()) {
     case 0: // OFF

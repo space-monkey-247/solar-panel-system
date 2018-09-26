@@ -7,7 +7,7 @@
 #include <ESP8266WiFi.h>
 #include <SolarPanelEnvironment.h>
 
-bool SERIAL_COMMUNICATION_ENABLED = true;
+bool SERIAL_COMMUNICATION_ENABLED = false;
 
 /**** Rooter Bogdan ****************************************************************/
 //const char* SSID_NAME = "Telekom-rOlKBz"; // Put here your SSID name
@@ -56,8 +56,7 @@ void setup(void) {
   pumpRelaySetup();
 //  lcdSetup();
 
-  env.startUpMillis = millis();
-  env.init();
+  env.init(millis());
 }
 
 void serialSetup() {
@@ -551,7 +550,18 @@ char* preparePayload() {
   dtostrf(env.getSolarPanelTemperature(), 4, 2, str_val_2);
 
   // prepare systemRunningTime in minutes
-  unsigned long currentTime = (millis() - env.startUpMillis) / 60000;
+  unsigned long currentMillis = millis();
+  unsigned long interval = currentMillis - env.previousMillis;
+  if (currentMillis < env.previousMillis) {
+    interval = currentMillis;
+    // loosing the interval from the previousMillis until the rollover
+  }
+  env.previousMillis += interval;
+  env.upTime += interval;
+  env.cycleNo++;
+  env.cycles.setStringValue(String(env.cycleNo));
+
+  unsigned long currentTime = env.upTime / 60000;
   env.systemRunningTime.setStringValue(String(currentTime, DEC));
 
   /* Builds the payload with structure:{"inside-temperature":24.75,"outside-temperature":19.19} */
@@ -573,6 +583,7 @@ char* preparePayload() {
     sprintf(payload, "%s,\"%s\":%s", payload, env.controlPanelVariablesChanged.getLabel().c_str(), env.controlPanelVariablesChanged.getStringValue().c_str());
   }
   sprintf(payload, "%s,\"%s\":%s", payload, env.systemRunningTime.getLabel().c_str(), env.systemRunningTime.getStringValue().c_str());
+  sprintf(payload, "%s,\"%s\":%s", payload, env.cycles.getLabel().c_str(), env.cycles.getStringValue().c_str());
   sprintf(payload, "%s}", payload);
   return payload;
 }
