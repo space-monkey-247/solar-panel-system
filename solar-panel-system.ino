@@ -354,6 +354,9 @@ void runAutoISystemModeComputations() {
   float targetDelta = env.targetBoilerTemp.getFloatValue()
                     + env.alterTargetDeltaValue.getFloatValue()
                     - env.getBoilerTemperature();
+  if (targetDelta < 0) {
+    targetDelta = 0;
+  }
   // start = 35 * 65 / 100 = 22.75
   float start = (targetDelta * env.startPump.getFloatValue()) / 100;
   // stop = 35 * 15 / 100 = 5.25
@@ -458,6 +461,9 @@ void runAutoIIISystemModeComputations() {
   // targetDelta = 65 + 15 - 45 = 80 - 45 = 35
   float targetDelta = env.targetBoilerTemp.getFloatValue()
                     - env.getBoilerTemperature();
+  if (targetDelta < 0) {
+    targetDelta = 0;
+  }
   // start = 35 * 65 / 100 = 22.75
   float start = env.startPump.getFloatValue() + (targetDelta * env.alterTargetDeltaValue.getFloatValue()) / 100;
   // stop = 35 * 15 / 100 = 5.25
