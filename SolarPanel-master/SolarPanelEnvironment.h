@@ -12,6 +12,9 @@ class SolarPanelEnvironment {
 
     char* deviceLabel;
     bool pumpON = false;
+    float targetDelta;
+    float start;
+    float stop;
     bool pumpOnPreviousValue = false;
     unsigned long startUpMillis = 0;
     unsigned long previousMillis = 0;
@@ -73,8 +76,12 @@ class SolarPanelEnvironment {
 	  int downloadVariablesSize = sizeof(downloadVariables) / sizeof(downloadVariables[0]);
     int variableDownloadIndex = 0;
 
+    void init(unsigned long currentMillis);
+    bool isPanelSafetyON();
+    void checkPumpONState();
+    void exceptionHandling();
+
     float getSolarPanelTemperature();
     float getBoilerTemperature();
-    void init(unsigned long currentMillis);
 
 };

@@ -11,6 +11,41 @@ float SolarPanelEnvironment::getBoilerTemperature() {
   return boilerTemp.getFloatValue() + alterBoilerTemp.getFloatValue();
 }
 
+bool SolarPanelEnvironment::isPanelSafetyON() {
+  return getSolarPanelTemperature() >= solarPanelMaxTemp.getFloatValue() ||
+  		getSolarPanelTemperature() <= solarPanelMinTemp.getFloatValue();
+}
+
+void SolarPanelEnvironment::checkPumpONState() {
+  if ((isPanelSafetyON() == true) || (
+		  (getSolarPanelTemperature() >= getBoilerTemperature() + start) &&
+      (getSolarPanelTemperature() >= minRunningTemperature.getFloatValue())
+    )) {
+    // getSolarPanelTemperature() >= 45 + 22.75 = 67.75
+		pumpON = true;
+	}
+
+	if (!isPanelSafetyON() && pumpON &&
+		(getSolarPanelTemperature() <= getBoilerTemperature() + stop ||
+     getBoilerTemperature() > targetBoilerTemp.getFloatValue())) {
+    // getSolarPanelTemperature() <= 45 + 5.25 = 50.25
+		pumpON = false;
+	}
+
+  exceptionHandling();
+}
+
+void SolarPanelEnvironment::exceptionHandling() {
+  // exception handling
+  float wireSensorErrorTemp = -127;
+  if (wireSensorErrorTemp == solarPanelTemp.getFloatValue() ||
+      wireSensorErrorTemp == boilerTemp.getFloatValue()) {
+    messages.setStringValue(String("[Error] Some sensor wires are disconnected."));
+    pumpON = true;
+    return;
+  }
+}
+
 void SolarPanelEnvironment::init(unsigned long currentMillis) {
   startUpMillis = currentMillis;
 

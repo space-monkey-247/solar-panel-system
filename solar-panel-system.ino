@@ -508,6 +508,47 @@ void runAutoIIISystemModeComputations() {
   }
 }
 
+void runAutoIVSystemModeComputations() {
+  serialPrintln(" System mode: Auto III");
+  printControlPanelVariables();
+
+  // targetDelta = 65 + 15 - 45 = 80 - 45 = 35
+  float targetDelta = env.targetBoilerTemp.getFloatValue()
+                    - env.getBoilerTemperature();
+  if (targetDelta < 0) {
+    targetDelta = 0;
+  }
+  // start = 35 * 65 / 100 = 22.75
+  env.start = env.startPump.getFloatValue()
+    + (targetDelta * env.alterTargetDeltaValue.getFloatValue()) / 100;
+  // stop = 35 * 15 / 100 = 5.25
+  env.stop = env.startPump.getFloatValue()
+    + (targetDelta * env.alterTargetDeltaValue.getFloatValue()) / 100;
+
+  env.checkPumpONState();
+  printErrorMessages();
+
+  serialPrintln(" Computed values: ");
+  printEnvironmentComtutedValues();
+}
+
+void printEnvironmentComtutedValues() {
+  serialPrintCalculatedValue("targetDelta", String(env.targetDelta));
+  serialPrintCalculatedValue("start", String(env.start));
+  serialPrintCalculatedValue("stop", String(env.stop));
+  serialPrintCalculatedValue("env.getSolarPanelTemperature()", String(env.getSolarPanelTemperature()));
+  serialPrintCalculatedValue("env.getBoilerTemperature()", String(env.getBoilerTemperature()));
+  serialPrintCalculatedValue("isPanelSafetyON", String(env.isPanelSafetyON()));
+  serialPrintCalculatedValue("env.pumpON", String(env.pumpON));
+}
+
+void printErrorMessages() {
+  if (env.messages.isEmpty() == false) {
+    serialPrintF("");
+    serialPrintF(env.messages.getStringValue().c_str());
+  }
+}
+
 void updateThePumpStatus() {
   if (env.pumpON) {
     serialPrintF(" Pump is ON\n");
