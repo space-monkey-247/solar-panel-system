@@ -40,7 +40,7 @@ class SolarPanelEnvironment {
        5 Auto III  #169c8d
     }
     */
-    Variable systemMode = Variable("system-mode", "5");
+    Variable systemMode = Variable("system-mode", "4");
     Variable systemRunningTime = Variable("system-running-time", "0");
     Variable cycles = Variable("cycle-number", "0");
     Variable messages = Variable("messages");
@@ -48,17 +48,17 @@ class SolarPanelEnvironment {
     // running
     Variable targetBoilerTemp = Variable("target-boiler-temperature", "65");
     Variable minRunningTemperature = Variable("min-running-temperature", "40");
-    Variable startPump = Variable("pump-start");
-    Variable stopPump = Variable("pump-stop");
+    Variable startPump = Variable("pump-start", "10");
+    Variable stopPump = Variable("pump-stop", "5");
 
     // alter values
     Variable alterSolarPanelTemp = Variable("alter-solar-panel-temperature", "0");
-    Variable alterTargetDeltaValue = Variable("alter-delta-value", "15");
+    Variable alterTargetDeltaValue = Variable("alter-delta-value", "0");
     Variable alterBoilerTemp = Variable("alter-boiler-temperature", "0");
 
     // safety
     Variable solarPanelMaxTemp = Variable("solar-panel-max-temperature", "98");
-    Variable solarPanelMinTemp = Variable("solar-panel-min-temperature", "2");
+    Variable solarPanelMinTemp = Variable("solar-panel-min-temperature", "-10");
 
     Variable* downloadVariables[10] = {
       &systemMode,
