@@ -40,7 +40,7 @@ class SolarPanelEnvironment {
        5 Auto III  #169c8d
     }
     */
-    Variable systemMode = Variable("system-mode", "4");
+    Variable systemMode = Variable("system-mode", "3");
     Variable systemRunningTime = Variable("system-running-time", "0");
     Variable cycles = Variable("cycle-number", "0");
     Variable messages = Variable("messages");

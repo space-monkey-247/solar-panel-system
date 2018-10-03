@@ -248,7 +248,7 @@ void updateVariableValue(Variable variable) {
 void runSystemComputations() {
   serialPrintln("");
   serialPrintln(F("Computing:"));
-  //env.init();
+  printControlPanelVariables();
 
   switch (env.systemMode.getIntValue()) {
     case 0:
@@ -276,6 +276,12 @@ void runSystemComputations() {
       runAutoIIISystemModeComputations();
       break;
   }
+
+  env.checkPumpONState();
+  printErrorMessages();
+
+  serialPrintln(" Computed values: ");
+  printEnvironmentComtutedValues();
 }
 
 void serialPrintFloat(const char* formatedMessage, float floatValue) {
@@ -347,9 +353,15 @@ void printControlPanelVariables() {
 }
 
 void runAutoISystemModeComputations() {
-  serialPrintln(" System mode: Auto I");
-  printControlPanelVariables();
+  // start & stop are constants
+  // start = 10;
+  env.start = env.startPump.getFloatValue();
+  // stop = 5;
+  env.stop = env.stopPump.getFloatValue();
+}
 
+void runAutoIISystemModeComputations() {
+  // start & stop represent a percentage from targetDelta
   // targetDelta = 65 + 15 - 45 = 80 - 45 = 35
   float targetDelta = env.targetBoilerTemp.getFloatValue()
                     + env.alterTargetDeltaValue.getFloatValue()
@@ -358,106 +370,12 @@ void runAutoISystemModeComputations() {
     targetDelta = 0;
   }
   // start = 35 * 65 / 100 = 22.75
-  float start = (targetDelta * env.startPump.getFloatValue()) / 100;
+  env.start = (targetDelta * env.startPump.getFloatValue()) / 100;
   // stop = 35 * 15 / 100 = 5.25
-  float stop = (targetDelta * env.stopPump.getFloatValue()) / 100;
-
-  serialPrintln(" Computed values: ");
-  serialPrintCalculatedValue("env.getBoilerTemperature()", String(env.getBoilerTemperature()));
-  serialPrintCalculatedValue("start", String(start));
-  serialPrintCalculatedValue("targetDelta", String(targetDelta));
-  serialPrintCalculatedValue("stop", String(stop));
-
-	boolean panelSafety =
-    env.getSolarPanelTemperature() >= env.solarPanelMaxTemp.getFloatValue() ||
-		env.getSolarPanelTemperature() <= env.solarPanelMinTemp.getFloatValue();
-  serialPrintCalculatedValue("panelSafety", String(panelSafety));
-
-	if ((panelSafety == true) || (
-		  (env.getSolarPanelTemperature() >= env.getBoilerTemperature() + start) &&
-      (env.getSolarPanelTemperature() >= env.minRunningTemperature.getFloatValue())
-    )) {
-    // getSolarPanelTemperature() >= 45 + 22.75 = 67.75
-		env.pumpON = true;
-	}
-	if (!panelSafety && env.pumpON &&
-		(env.getSolarPanelTemperature() <= env.getBoilerTemperature() + stop ||
-     env.getBoilerTemperature() > env.targetBoilerTemp.getFloatValue())) {
-    // env.getSolarPanelTemperature() <= 45 + 5.25 = 50.25
-		env.pumpON = false;
-	}
-  serialPrintCalculatedValue("env.pumpON", String(env.pumpON));
-  serialPrintCalculatedValue("env.getSolarPanelTemperature()", String(env.getSolarPanelTemperature()));
-  serialPrintCalculatedValue("env.getBoilerTemperature()", String(env.getBoilerTemperature()));
-
-  // exception handling
-  float wireSensorErrorTemp = -127;
-  if (wireSensorErrorTemp == env.solarPanelTemp.getFloatValue() ||
-      wireSensorErrorTemp == env.boilerTemp.getFloatValue()) {
-    serialPrintF("");
-    serialPrintF("Error: Some sensor wires are disconnected.");
-//    env.messages.setStringValue(String("[Error] Some sensor wires are disconnected."));
-    env.pumpON = true;
-  }
-}
-
-void runAutoIISystemModeComputations() {
-  serialPrintln(" System mode: Auto II");
-  printControlPanelVariables();
-
-  // targetDelta = 65 + 15 - 45 = 80 - 45 = 35
-  // float targetDelta = env.targetBoilerTemp.getFloatValue()
-  //                   + env.alterTargetDeltaValue.getFloatValue()
-  //                   - env.getBoilerTemperature();
-
-  // start = 20;
-  float start = env.startPump.getFloatValue();
-  // stop = 5;
-  float stop = env.stopPump.getFloatValue();
-
-  serialPrintln(" Computed values: ");
-  serialPrintCalculatedValue("env.getBoilerTemperature()", String(env.getBoilerTemperature()));
-  serialPrintCalculatedValue("start", String(start));
-  // serialPrintCalculatedValue("targetDelta", String(targetDelta));
-  serialPrintCalculatedValue("stop", String(stop));
-
-	boolean panelSafety =
-    env.getSolarPanelTemperature() >= env.solarPanelMaxTemp.getFloatValue() ||
-		env.getSolarPanelTemperature() <= env.solarPanelMinTemp.getFloatValue();
-  serialPrintCalculatedValue("panelSafety", String(panelSafety));
-
-	if ((panelSafety == true) || (
-		  (env.getSolarPanelTemperature() >= env.getBoilerTemperature() + start) &&
-      (env.getSolarPanelTemperature() >= env.minRunningTemperature.getFloatValue())
-    )) {
-    // getSolarPanelTemperature() >= 45 + 20 = 65
-		env.pumpON = true;
-	}
-	if (!panelSafety && env.pumpON &&
-		(env.getSolarPanelTemperature() <= env.getBoilerTemperature() + stop ||
-     env.getBoilerTemperature() > env.targetBoilerTemp.getFloatValue())) {
-    // env.getSolarPanelTemperature() <= 45 + 5 = 50
-		env.pumpON = false;
-	}
-  serialPrintCalculatedValue("env.pumpON", String(env.pumpON));
-  serialPrintCalculatedValue("env.getSolarPanelTemperature()", String(env.getSolarPanelTemperature()));
-  serialPrintCalculatedValue("env.getBoilerTemperature()", String(env.getBoilerTemperature()));
-
-  // exception handling
-  float wireSensorErrorTemp = -127;
-  if (wireSensorErrorTemp == env.solarPanelTemp.getFloatValue() ||
-      wireSensorErrorTemp == env.boilerTemp.getFloatValue()) {
-    // todo: send error to server
-    serialPrintF("");
-    serialPrintF("Error: Some sensor wires are disconnected.");
-    env.pumpON = true;
-  }
+  env.stop = (targetDelta * env.stopPump.getFloatValue()) / 100;
 }
 
 void runAutoIIISystemModeComputations() {
-  serialPrintln(" System mode: Auto III");
-  printControlPanelVariables();
-
   // targetDelta = 65 + 15 - 45 = 80 - 45 = 35
   float targetDelta = env.targetBoilerTemp.getFloatValue()
                     - env.getBoilerTemperature();
@@ -465,51 +383,13 @@ void runAutoIIISystemModeComputations() {
     targetDelta = 0;
   }
   // start = 35 * 65 / 100 = 22.75
-  float start = env.startPump.getFloatValue() + (targetDelta * env.alterTargetDeltaValue.getFloatValue()) / 100;
+  env.start = env.startPump.getFloatValue() + (targetDelta * env.alterTargetDeltaValue.getFloatValue()) / 100;
   // stop = 35 * 15 / 100 = 5.25
-  float stop = env.stopPump.getFloatValue() + (targetDelta * env.alterTargetDeltaValue.getFloatValue()) / 100;
-
-  serialPrintln(" Computed values: ");
-  serialPrintCalculatedValue("env.getBoilerTemperature()", String(env.getBoilerTemperature()));
-  serialPrintCalculatedValue("start", String(start));
-  serialPrintCalculatedValue("targetDelta", String(targetDelta));
-  serialPrintCalculatedValue("stop", String(stop));
-
-	boolean panelSafety =
-    env.getSolarPanelTemperature() >= env.solarPanelMaxTemp.getFloatValue() ||
-		env.getSolarPanelTemperature() <= env.solarPanelMinTemp.getFloatValue();
-  serialPrintCalculatedValue("panelSafety", String(panelSafety));
-
-	if ((panelSafety == true) || (
-		  (env.getSolarPanelTemperature() >= env.getBoilerTemperature() + start) &&
-      (env.getSolarPanelTemperature() >= env.minRunningTemperature.getFloatValue())
-    )) {
-    // getSolarPanelTemperature() >= 45 + 22.75 = 67.75
-		env.pumpON = true;
-	}
-	if (!panelSafety && env.pumpON &&
-		(env.getSolarPanelTemperature() <= env.getBoilerTemperature() + stop ||
-     env.getBoilerTemperature() > env.targetBoilerTemp.getFloatValue())) {
-    // env.getSolarPanelTemperature() <= 45 + 5.25 = 50.25
-		env.pumpON = false;
-	}
-  serialPrintCalculatedValue("env.pumpON", String(env.pumpON));
-  serialPrintCalculatedValue("env.getSolarPanelTemperature()", String(env.getSolarPanelTemperature()));
-  serialPrintCalculatedValue("env.getBoilerTemperature()", String(env.getBoilerTemperature()));
-
-  // exception handling
-  float wireSensorErrorTemp = -127;
-  if (wireSensorErrorTemp == env.solarPanelTemp.getFloatValue() ||
-      wireSensorErrorTemp == env.boilerTemp.getFloatValue()) {
-    serialPrintF("");
-    serialPrintF("Error: Some sensor wires are disconnected.");
-//    env.messages.setStringValue(String("[Error] Some sensor wires are disconnected."));
-    env.pumpON = true;
-  }
+  env.stop = env.stopPump.getFloatValue() + (targetDelta * env.alterTargetDeltaValue.getFloatValue()) / 100;
 }
 
 void runAutoIVSystemModeComputations() {
-  serialPrintln(" System mode: Auto III");
+  serialPrintln(" System mode: Auto IV");
   printControlPanelVariables();
 
   // targetDelta = 65 + 15 - 45 = 80 - 45 = 35

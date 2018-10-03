@@ -58,16 +58,16 @@ void SolarPanelEnvironment::init(unsigned long currentMillis) {
     case 2: // Vacation
       break;
     case 3: // Auto I
+      startPump.setIntValue(10);
+      stopPump.setIntValue(5);
+      break;
+    case 4: // Auto II
       startPump.setIntValue(60);
       stopPump.setIntValue(30);
       break;
-    case 4: // Auto II
-      startPump.setIntValue(20);
-      stopPump.setIntValue(5);
-      break;
-    case 5: // Auto II
+    case 5: // Auto III = I + II
       alterTargetDeltaValue.setIntValue(20);
-      startPump.setIntValue(20);
+      startPump.setIntValue(10);
       stopPump.setIntValue(5);
       break;
   }
