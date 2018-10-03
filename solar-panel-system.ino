@@ -468,15 +468,9 @@ void readTemperatures() {
   // celsius sign
   lcdPrint(15, 1, (char)223);
 }
-
-char* preparePayload() {
-  // Transforms the values of the sensors to char type
-  char str_val_1[30];
-  char str_val_2[30];
-  dtostrf(env.getBoilerTemperature(), 4, 2, str_val_1);
-  dtostrf(env.getSolarPanelTemperature(), 4, 2, str_val_2);
-
+void prepareSystemUpTime() {
   // prepare systemRunningTime in minutes
+  int oneMinute = 60000;
   unsigned long currentMillis = millis();
   unsigned long interval = currentMillis - env.previousMillis;
   if (currentMillis < env.previousMillis) {
@@ -488,8 +482,18 @@ char* preparePayload() {
   env.cycleNo++;
   env.cycles.setStringValue(String(env.cycleNo));
 
-  unsigned long currentTime = env.upTime / 60000;
+  unsigned long currentTime = env.upTime / oneMinute;
   env.systemRunningTime.setStringValue(String(currentTime, DEC));
+}
+
+char* preparePayload() {
+  // Transforms the values of the sensors to char type
+  char str_val_1[30];
+  char str_val_2[30];
+  dtostrf(env.getBoilerTemperature(), 4, 2, str_val_1);
+  dtostrf(env.getSolarPanelTemperature(), 4, 2, str_val_2);
+
+  prepareSystemUpTime();
 
   /* Builds the payload with structure:{"inside-temperature":24.75,"outside-temperature":19.19} */
   char* payload = (char *) malloc(sizeof(char) * 500);
