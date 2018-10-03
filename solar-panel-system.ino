@@ -272,7 +272,7 @@ void runSystemComputations() {
       runAutoIISystemModeComputations();
       break;
     case 5:
-      // Auto III
+      // Auto III = II + I
       runAutoIIISystemModeComputations();
       break;
   }
