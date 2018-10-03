@@ -347,7 +347,7 @@ void serialPrintCalculatedValue(const char* variableLabel, String value) {
 void printControlPanelVariables() {
   serialPrintln(" Variables: ");
   serialPrintVariable(env.systemRunningTime);
-  for (int idx; idx < env.downloadVariablesSize; idx++) {
+  for (int idx = 0; idx < env.downloadVariablesSize; idx++) {
     serialPrintVariable(*env.downloadVariables[idx]);
   }
 }
