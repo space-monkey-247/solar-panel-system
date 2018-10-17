@@ -5,21 +5,25 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <ESP8266WiFi.h>
+#include "UbidotsESPMQTT.h"
 #include <SolarPanelEnvironment.h>
 
-bool SERIAL_COMMUNICATION_ENABLED = false;
+bool SERIAL_COMMUNICATION_ENABLED = true;
+
 
 /**** Rooter Bogdan ****************************************************************/
-//const char* SSID_NAME = "Telekom-rOlKBz"; // Put here your SSID name
-//const char* SSID_PASS = "36kexrah4e1s"; // Put here your password
+const char* SSID_NAME = "Telekom-rOlKBz"; // Put here your SSID name
+const char* SSID_PASS = "36kexrah4e1s"; // Put here your password
 /**** Hotspot Tudor ****************************************************************/
-const char* SSID_NAME = "Tudor Hotspot"; // Put here your SSID name
-const char* SSID_PASS = "Tudor123!"; // Put here your password
+// const char* SSID_NAME = "Tudor Hotspot"; // Put here your SSID name
+// const char* SSID_PASS = "Tudor123!"; // Put here your password
+
 
 const char* TOKEN = "A1E-Brpd96xLq77tUwPkpXsXvCHCzdX4dZ";
-const char* DEVICE_LABEL = "wemos-d1-mini";
-const char* INSIDE_TEMP_LABEL = "inside-temperature";
-const char* OUTSIDE_TEMP_LABEL = "outside-temperature";
+// device label artan
+//const char* DEVICE_LABEL = "wemos-d1-mini";
+// device label artan
+const char* DEVICE_LABEL = "solar-panel-test-env";
 const char* USER_AGENT = "ESP8266";
 const char* VERSION = "1.0";
 const char* HTTPSERVER = "things.ubidots.com";
@@ -28,7 +32,10 @@ int HTTPPORT = 80;
 // Pump relay pin
 #define PUMP_RELAY_PIN  D7
 
+// http client
 WiFiClient clientUbi;
+// mqtt cloent
+Ubidots mqttClient((char*)TOKEN);
 
 /********************************************************************/
 // Data wire is plugged into pin D3 on the Arduino
@@ -53,10 +60,44 @@ void setup(void) {
   serialSetup();
   oneWireSensorsSetup();
   wifiSetup();
+  mqttSetup();
   pumpRelaySetup();
 //  lcdSetup();
 
   env.init(millis());
+}
+
+void callback(char* topic, byte* payload, unsigned int length) {
+  Serial.print("Message arrived [");
+  Serial.print(topic);
+  Serial.print("] ");
+  for (int i=0;i<length;i++) {
+    Serial.print((char)payload[i]);
+  }
+  Serial.println();
+}
+
+void mqttSetup() {
+  mqttClient.setDebug(true); // Pass a true or false bool value to activate debug messages
+  mqttClient.wifiConnection((char *)SSID_NAME, (char *)SSID_PASS);
+  mqttClient.begin(callback);
+  mqttSubscribeVariables();
+}
+
+void mqttSubscribeVariables() {
+  mqttClient.ubidotsSubscribe((char *)DEVICE_LABEL, "pump-start");
+  mqttClient.ubidotsSubscribe((char *)DEVICE_LABEL, "pump-stop");
+}
+
+void mqttPublish() {
+  if(!mqttClient.connected()) {
+    mqttClient.reconnect();
+    mqttSubscribeVariables();
+  }
+  mqttClient.add("solar-panel-temperature", 10);
+  mqttClient.add("boiler-temperature", 20);
+  mqttClient.ubidotsPublish((char *)DEVICE_LABEL);
+  mqttClient.loop();
 }
 
 void serialSetup() {
@@ -149,15 +190,18 @@ void loop(void)
   // try to reconnecting for 3 times
   wifiConnecting(3);
   // get variables from ubidots
-  downloadAndUpdateEnvironmentVariables();
+  //downloadAndUpdateEnvironmentVariables();
   // read temperature of wired devices
-  readTemperatures();
+  //readTemperatures();
   // pump switch on/off based on the environment variables
-  runSystemComputations();
-  updateThePumpStatus();
+  //runSystemComputations();
+  //updateThePumpStatus();
   // send temperatures to ubidots
-  sendValuesToServer();
-
+  //sendValuesToServer();
+  
+  // mqtt
+  mqttPublish();
+  
   serialPrintln("");
   serialPrintln(F("********************************************************************"));
 
