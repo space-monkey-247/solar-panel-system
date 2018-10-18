@@ -5,7 +5,7 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <ESP8266WiFi.h>
-#include "UbidotsESPMQTT.h"
+#include <UbidotsESPMQTT.h>
 #include <SolarPanelEnvironment.h>
 
 bool SERIAL_COMMUNICATION_ENABLED = true;
@@ -97,8 +97,7 @@ void mqttPublish() {
     mqttClient.begin(callback);
     mqttSubscribeVariables();
   }
-  mqttClient.add("solar-panel-temperature", 10);
-  mqttClient.add("boiler-temperature", 20);
+  prepareMqttPublishValues();
   mqttClient.ubidotsPublish((char *)DEVICE_LABEL);
   mqttClient.loop();
 }
@@ -531,6 +530,14 @@ void prepareSystemUpTime() {
 
   unsigned long currentTime = env.upTime / oneMinute;
   env.systemRunningTime.setStringValue(String(currentTime, DEC));
+}
+
+void prepareMqttPublishValues() {
+  mqttClient.add((char*) env.boilerTemp.getLabel().c_str(), env.getBoilerTemperature());
+  mqttClient.add((char*) env.solarPanelTemp.getLabel().c_str(), env.getSolarPanelTemperature());
+  mqttClient.add((char*) env.pumpStatus.getLabel().c_str(), env.pumpStatus.getFloatValue());
+  mqttClient.add((char*) env.systemRunningTime.getLabel().c_str(), env.systemRunningTime.getFloatValue());
+  mqttClient.add((char*) env.cycles.getLabel().c_str(), env.cycles.getFloatValue());
 }
 
 char* preparePayload() {

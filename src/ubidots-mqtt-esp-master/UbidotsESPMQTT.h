@@ -32,7 +32,7 @@ Modified by: Jose Garcia
 
 #define MQTT_PORT 1883
 #define SERVER "things.ubidots.com"
-#define MAX_VALUES 5
+#define MAX_VALUES 9
 #define FIRST_PART_TOPIC "/v1.6/devices/"
 #define DEFAULT_DEVICE_LABEL "ESP8266"
 
@@ -63,7 +63,7 @@ class Ubidots {
     char* _ssid;
     char* _token;
     Value * val;
- 
+
  public:
     Ubidots(char* token);
     Ubidots(char* token, char* clientName);
