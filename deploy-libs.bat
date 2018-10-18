@@ -4,7 +4,7 @@ SETLOCAL
 SET sourceDir=%CD%\src
 echo sourceDir: "%sourceDir%"
 
-rem c:\Users\Bbuzac\Documents\Arduino\libraries\solar-panel-library\
+rem c:\Users\Bbuzac\Documents\Arduino\libraries\solar-panel-master\
 SET dest_dir=%userprofile%\Documents\Arduino\libraries
 echo dest_dir: "%dest_dir%"
 
@@ -14,10 +14,10 @@ IF EXIST "%dest_dir%" (
 	DEL "%dest_dir%\ubidots-mqtt-esp-master" /Q /F /S
 )
 
-rem delete solar-panel-library
+rem delete solar-panel-master
 IF EXIST "%dest_dir%" (
-	echo Deleting "%dest_dir%\solar-panel-library" dir. 
-	DEL "%dest_dir%\solar-panel-library" /Q /F /S
+	echo Deleting "%dest_dir%\solar-panel-master" dir. 
+	DEL "%dest_dir%\solar-panel-master" /Q /F /S
 )
 
 xcopy "%sourceDir%" "%dest_dir%" /Y /F /E
