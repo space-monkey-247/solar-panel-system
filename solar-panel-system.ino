@@ -92,6 +92,7 @@ void mqttSubscribeVariables() {
 void mqttPublish() {
   if(!mqttClient.connected()) {
     mqttClient.reconnect();
+    mqttClient.begin(callback);
     mqttSubscribeVariables();
   }
   mqttClient.add("solar-panel-temperature", 10);
