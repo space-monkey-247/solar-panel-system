@@ -1,4 +1,4 @@
- /********************************************************************/
+/********************************************************************/
 // First we include the libraries
 #include <OneWire.h>
 #include <DallasTemperature.h>
@@ -11,11 +11,11 @@
 bool SERIAL_COMMUNICATION_ENABLED = true;
 
 /**** Wifi Endava ****************************************************************/
-const char* SSID_NAME = "endava-byod"; // Put here your SSID name
-const char* SSID_PASS = "Agile-Transformation-Innovative-Solutions"; // Put here your password
+//const char* SSID_NAME = "endava-byod"; // Put here your SSID name
+//const char* SSID_PASS = "Agile-Transformation-Innovative-Solutions"; // Put here your password
 /**** Rooter Bogdan ****************************************************************/
-// const char* SSID_NAME = "Telekom-rOlKBz"; // Put here your SSID name
-// const char* SSID_PASS = "36kexrah4e1s"; // Put here your password
+ const char* SSID_NAME = "Telekom-rOlKBz"; // Put here your SSID name
+ const char* SSID_PASS = "36kexrah4e1s"; // Put here your password
 /**** Hotspot Tudor ****************************************************************/
 // const char* SSID_NAME = "Tudor Hotspot"; // Put here your SSID name
 // const char* SSID_PASS = "Tudor123!"; // Put here your password
@@ -194,10 +194,10 @@ void loop(void)
   // get variables from ubidots
   //downloadAndUpdateEnvironmentVariables();
   // read temperature of wired devices
-  //readTemperatures();
+  readTemperatures();
   // pump switch on/off based on the environment variables
-  //runSystemComputations();
-  //updateThePumpStatus();
+  runSystemComputations();
+  updateThePumpStatus();
   // send temperatures to ubidots
   //sendValuesToServer();
 
@@ -470,8 +470,8 @@ void printEnvironmentComtutedValues() {
 
 void printErrorMessages() {
   if (env.messages.isEmpty() == false) {
-    serialPrintF("");
-    serialPrintF(env.messages.getStringValue().c_str());
+    serialPrint("");
+    serialPrintln(env.messages.getStringValue().c_str());
   }
 }
 
@@ -533,10 +533,16 @@ void prepareSystemUpTime() {
 }
 
 void prepareMqttPublishValues() {
+
+  serialPrintVariable(env.boilerTemp);
   mqttClient.add((char*) env.boilerTemp.getLabel().c_str(), env.getBoilerTemperature());
+  serialPrintVariable(env.solarPanelTemp);
   mqttClient.add((char*) env.solarPanelTemp.getLabel().c_str(), env.getSolarPanelTemperature());
+  serialPrintVariable(env.pumpStatus);
   mqttClient.add((char*) env.pumpStatus.getLabel().c_str(), env.pumpStatus.getFloatValue());
+  serialPrintVariable(env.systemRunningTime);
   mqttClient.add((char*) env.systemRunningTime.getLabel().c_str(), env.systemRunningTime.getFloatValue());
+  serialPrintVariable(env.cycles);
   mqttClient.add((char*) env.cycles.getLabel().c_str(), env.cycles.getFloatValue());
 }
 

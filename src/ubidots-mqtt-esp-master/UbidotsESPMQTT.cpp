@@ -56,7 +56,7 @@ bool Ubidots::add(char* variableLabel, float value, char *context) {
 
 
 bool Ubidots::add(char* variableLabel, float value, char *context, char *timestamp) {
-    (val+currentValue)->_variableLabel = variableLabel;
+    strcpy((val+currentValue)->_variableLabel, variableLabel);
     (val+currentValue)->_value = value;
     (val+currentValue)->_context = context;
     (val+currentValue)->_timestamp = timestamp;
