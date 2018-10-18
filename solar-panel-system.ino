@@ -10,10 +10,12 @@
 
 bool SERIAL_COMMUNICATION_ENABLED = true;
 
-
+/**** Wifi Endava ****************************************************************/
+const char* SSID_NAME = "endava-byod"; // Put here your SSID name
+const char* SSID_PASS = "Agile-Transformation-Innovative-Solutions"; // Put here your password
 /**** Rooter Bogdan ****************************************************************/
-const char* SSID_NAME = "Telekom-rOlKBz"; // Put here your SSID name
-const char* SSID_PASS = "36kexrah4e1s"; // Put here your password
+// const char* SSID_NAME = "Telekom-rOlKBz"; // Put here your SSID name
+// const char* SSID_PASS = "36kexrah4e1s"; // Put here your password
 /**** Hotspot Tudor ****************************************************************/
 // const char* SSID_NAME = "Tudor Hotspot"; // Put here your SSID name
 // const char* SSID_PASS = "Tudor123!"; // Put here your password
@@ -199,10 +201,10 @@ void loop(void)
   //updateThePumpStatus();
   // send temperatures to ubidots
   //sendValuesToServer();
-  
+
   // mqtt
   mqttPublish();
-  
+
   serialPrintln("");
   serialPrintln(F("********************************************************************"));
 
