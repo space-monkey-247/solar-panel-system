@@ -93,6 +93,7 @@ void mqttSubscribeVariables() {
 
 void mqttPublish() {
   if(!mqttClient.connected()) {
+    serialPrintln("mqttClient.reconnect();");
     mqttClient.reconnect();
     mqttClient.begin(callback);
     mqttSubscribeVariables();
@@ -196,6 +197,11 @@ void loop(void)
   // read temperature of wired devices
   readTemperatures();
   // pump switch on/off based on the environment variables
+<<<<<<< Updated upstream
+=======
+  //runSystemComputations();
+  //updateThePumpStatus();
+>>>>>>> Stashed changes
   runSystemComputations();
   updateThePumpStatus();
   // send temperatures to ubidots
@@ -514,6 +520,7 @@ void readTemperatures() {
   // celsius sign
   lcdPrint(15, 1, (char)223);
 }
+
 void prepareSystemUpTime() {
   // prepare systemRunningTime in minutes
   int oneMinute = 60000;
@@ -533,17 +540,32 @@ void prepareSystemUpTime() {
 }
 
 void prepareMqttPublishValues() {
-
+  serialPrintln("prepareMqttPublishValues:");
   serialPrintVariable(env.boilerTemp);
+  serialPrintln(env.boilerTemp.getLabel());
+  serialPrintln(env.boilerTemp.getStringValue());
   mqttClient.add((char*) env.boilerTemp.getLabel().c_str(), env.getBoilerTemperature());
   serialPrintVariable(env.solarPanelTemp);
+  serialPrintln(env.solarPanelTemp.getLabel());
+  serialPrintln(env.solarPanelTemp.getStringValue());
   mqttClient.add((char*) env.solarPanelTemp.getLabel().c_str(), env.getSolarPanelTemperature());
-  serialPrintVariable(env.pumpStatus);
-  mqttClient.add((char*) env.pumpStatus.getLabel().c_str(), env.pumpStatus.getFloatValue());
-  serialPrintVariable(env.systemRunningTime);
-  mqttClient.add((char*) env.systemRunningTime.getLabel().c_str(), env.systemRunningTime.getFloatValue());
-  serialPrintVariable(env.cycles);
-  mqttClient.add((char*) env.cycles.getLabel().c_str(), env.cycles.getFloatValue());
+  // serialPrintVariable(env.pumpStatus);
+  // mqttClient.add((char*) env.pumpStatus.getLabel().c_str(), env.pumpStatus.getFloatValue());
+  // serialPrintVariable(env.systemRunningTime);
+  // mqttClient.add((char*) env.systemRunningTime.getLabel().c_str(), env.systemRunningTime.getFloatValue());
+  // serialPrintVariable(env.cycles);
+  // mqttClient.add((char*) env.cycles.getLabel().c_str(), env.cycles.getFloatValue());
+//  mqttClient.add(env.boilerTemp.getLabel().c_str(), env.getBoilerTemperature());
+//  mqttClient.add(env.solarPanelTemp.getLabel().c_str(), env.getSolarPanelTemperature());
+//  mqttClient.add(env.pumpStatus.getLabel().c_str(), env.pumpStatus.getFloatValue());
+//  mqttClient.add(env.systemRunningTime.getLabel().c_str(), env.systemRunningTime.getFloatValue());
+//  mqttClient.add(env.cycles.getLabel().c_str(), env.cycles.getFloatValue());
+  //  mqttClient.add("boiler-temperature", env.getBoilerTemperature());
+  //  mqttClient.add("solar-panel-temperature", env.getSolarPanelTemperature());
+  //  mqttClient.add("pump-status", env.pumpStatus.getFloatValue());
+  //  prepareSystemUpTime();
+  //  mqttClient.add("system-running-time", env.systemRunningTime.getFloatValue());
+  //  mqttClient.add("cycle-number", env.cycles.getFloatValue());
 }
 
 char* preparePayload() {

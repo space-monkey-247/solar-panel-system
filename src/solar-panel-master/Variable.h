@@ -27,6 +27,7 @@ class Variable {
     VariableType getType();
 
     bool isEmpty();
+    bool isDefaultValueEmpty();
 
   protected:
 

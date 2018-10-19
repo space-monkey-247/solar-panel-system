@@ -33,7 +33,11 @@ void Variable::setStringValue(String stringValue) {
 
 String Variable::getStringValue() {
 	if (isEmpty()) {
-		return defaultValue;
+		if (!isDefaultValueEmpty()) {
+			return defaultValue;
+		} else {
+			return String("0");
+		}
 	}
 	return value;
 }
@@ -80,4 +84,8 @@ VariableType Variable::getType() {
 
 bool Variable::isEmpty() {
 	return value == NULL || value.length() == 0;
+}
+
+bool Variable::isDefaultValueEmpty() {
+	return defaultValue == NULL || defaultValue.length() == 0;
 }
