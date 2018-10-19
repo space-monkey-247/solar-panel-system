@@ -11,11 +11,11 @@
 bool SERIAL_COMMUNICATION_ENABLED = true;
 
 /**** Wifi Endava ****************************************************************/
-//const char* SSID_NAME = "endava-byod"; // Put here your SSID name
-//const char* SSID_PASS = "Agile-Transformation-Innovative-Solutions"; // Put here your password
+const char* SSID_NAME = "endava-byod"; // Put here your SSID name
+const char* SSID_PASS = "Agile-Transformation-Innovative-Solutions"; // Put here your password
 /**** Rooter Bogdan ****************************************************************/
- const char* SSID_NAME = "Telekom-rOlKBz"; // Put here your SSID name
- const char* SSID_PASS = "36kexrah4e1s"; // Put here your password
+// const char* SSID_NAME = "Telekom-rOlKBz"; // Put here your SSID name
+// const char* SSID_PASS = "36kexrah4e1s"; // Put here your password
 /**** Hotspot Tudor ****************************************************************/
 // const char* SSID_NAME = "Tudor Hotspot"; // Put here your SSID name
 // const char* SSID_PASS = "Tudor123!"; // Put here your password
@@ -192,22 +192,20 @@ void loop(void)
 
   // try to reconnecting for 3 times
   wifiConnecting(3);
+  
   // get variables from ubidots
   //downloadAndUpdateEnvironmentVariables();
+  
   // read temperature of wired devices
   readTemperatures();
+  
   // pump switch on/off based on the environment variables
-<<<<<<< Updated upstream
-=======
-  //runSystemComputations();
-  //updateThePumpStatus();
->>>>>>> Stashed changes
   runSystemComputations();
   updateThePumpStatus();
+  prepareSystemUpTime();
+
   // send temperatures to ubidots
   //sendValuesToServer();
-
-  // mqtt
   mqttPublish();
 
   serialPrintln("");
@@ -539,33 +537,40 @@ void prepareSystemUpTime() {
   env.systemRunningTime.setStringValue(String(currentTime, DEC));
 }
 
+char* stringToChar(String stringValue) {
+  char* str = (char *) malloc(sizeof(char) * 255);
+//  sprintf(str, "%s", stringValue.c_str());
+//  strcpy(str, stringValue.c_str());
+  stringValue.toCharArray(str, 255);
+  return str;
+}
+
 void prepareMqttPublishValues() {
-  serialPrintln("prepareMqttPublishValues:");
+  serialPrintln("");
+  serialPrintln("Prepare MQTT publish values:");
+
+//  serialPrintVariable(env.boilerTemp);
+//  mqttClient.add(env.boilerTemp.getLabel(), env.getBoilerTemperature());
+//  serialPrintVariable(env.solarPanelTemp);
+//  mqttClient.add(env.solarPanelTemp.getLabel(), env.getSolarPanelTemperature());
+//  serialPrintVariable(env.pumpStatus);
+//  mqttClient.add(env.pumpStatus.getLabel(), env.pumpStatus.getFloatValue());
+//  serialPrintVariable(env.systemRunningTime);
+//  mqttClient.add(env.systemRunningTime.getLabel(), env.systemRunningTime.getFloatValue());
+//  serialPrintVariable(env.cycles);
+//  mqttClient.add(env.cycles.getLabel(), env.cycles.getFloatValue());
+
   serialPrintVariable(env.boilerTemp);
-  serialPrintln(env.boilerTemp.getLabel());
-  serialPrintln(env.boilerTemp.getStringValue());
-  mqttClient.add((char*) env.boilerTemp.getLabel().c_str(), env.getBoilerTemperature());
+  mqttClient.add(stringToChar(env.boilerTemp.getLabel()), env.getBoilerTemperature());
   serialPrintVariable(env.solarPanelTemp);
-  serialPrintln(env.solarPanelTemp.getLabel());
-  serialPrintln(env.solarPanelTemp.getStringValue());
-  mqttClient.add((char*) env.solarPanelTemp.getLabel().c_str(), env.getSolarPanelTemperature());
-  // serialPrintVariable(env.pumpStatus);
-  // mqttClient.add((char*) env.pumpStatus.getLabel().c_str(), env.pumpStatus.getFloatValue());
-  // serialPrintVariable(env.systemRunningTime);
-  // mqttClient.add((char*) env.systemRunningTime.getLabel().c_str(), env.systemRunningTime.getFloatValue());
-  // serialPrintVariable(env.cycles);
-  // mqttClient.add((char*) env.cycles.getLabel().c_str(), env.cycles.getFloatValue());
-//  mqttClient.add(env.boilerTemp.getLabel().c_str(), env.getBoilerTemperature());
-//  mqttClient.add(env.solarPanelTemp.getLabel().c_str(), env.getSolarPanelTemperature());
-//  mqttClient.add(env.pumpStatus.getLabel().c_str(), env.pumpStatus.getFloatValue());
-//  mqttClient.add(env.systemRunningTime.getLabel().c_str(), env.systemRunningTime.getFloatValue());
-//  mqttClient.add(env.cycles.getLabel().c_str(), env.cycles.getFloatValue());
-  //  mqttClient.add("boiler-temperature", env.getBoilerTemperature());
-  //  mqttClient.add("solar-panel-temperature", env.getSolarPanelTemperature());
-  //  mqttClient.add("pump-status", env.pumpStatus.getFloatValue());
-  //  prepareSystemUpTime();
-  //  mqttClient.add("system-running-time", env.systemRunningTime.getFloatValue());
-  //  mqttClient.add("cycle-number", env.cycles.getFloatValue());
+  mqttClient.add(stringToChar(env.solarPanelTemp.getLabel()), env.getSolarPanelTemperature());
+  serialPrintVariable(env.pumpStatus);
+  mqttClient.add(stringToChar(env.pumpStatus.getLabel()), env.pumpStatus.getFloatValue());
+  serialPrintVariable(env.systemRunningTime);
+  mqttClient.add(stringToChar(env.systemRunningTime.getLabel()), env.systemRunningTime.getFloatValue());
+  serialPrintVariable(env.cycles);
+  mqttClient.add(stringToChar(env.cycles.getLabel()), env.cycles.getFloatValue());
+  
 }
 
 char* preparePayload() {

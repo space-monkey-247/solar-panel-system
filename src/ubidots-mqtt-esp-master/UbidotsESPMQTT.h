@@ -47,7 +47,6 @@ typedef struct Value {
 } Value;
 
 
-
 class Ubidots {
  private:
     void (*callback)(char*,uint8_t*,unsigned int);
@@ -68,6 +67,7 @@ class Ubidots {
     Ubidots(char* token);
     Ubidots(char* token, char* clientName);
     bool add(char* variableLabel, float value);
+    bool add(String variableLabel, float value);
     bool add(char* variableLabel, float value, char *context);
     bool add(char* variableLabel, float value, char *context, char *timestamp);
     void begin(void (*callback)(char*,uint8_t*,unsigned int));
@@ -79,6 +79,7 @@ class Ubidots {
     void reconnect();
     void setDebug(bool debug);
     bool wifiConnection(char* ssid, char* pass);
+    char* stringToChar(String stringValue);
 };
 
 #endif

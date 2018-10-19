@@ -22,8 +22,8 @@ class SolarPanelEnvironment {
     unsigned long cycleNo = 0;
 
     // current status
-    Variable boilerTemp = Variable("boiler-temperature");
-    Variable solarPanelTemp = Variable("solar-panel-temperature");
+    Variable boilerTemp = Variable("boiler-temperature", "0");
+    Variable solarPanelTemp = Variable("solar-panel-temperature", "0");
     Variable pumpStatus = Variable("pump-status", "0");
 
     // control panel

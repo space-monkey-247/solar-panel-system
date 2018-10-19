@@ -20,10 +20,12 @@ IF EXIST "%dest_dir%" (
 	DEL "%dest_dir%\solar-panel-master" /Q /F /S
 )
 
-xcopy "%sourceDir%" "%dest_dir%" /Y /F /E
-
+IF EXIST "%dest_dir%" (
+	xcopy "%sourceDir%" "%dest_dir%" /Y /F /E
+)
 
 rem c:\Program Files\Arduino\libraries\
+rem c:\Program Files (x86)\
 SET dest_dir=c:\Program Files\Arduino\libraries
 echo dest_dir: "%dest_dir%"
 
@@ -39,7 +41,9 @@ IF EXIST "%dest_dir%" (
 	DEL "%dest_dir%\solar-panel-master" /Q /F /S
 )
 
-xcopy "%sourceDir%" "%dest_dir%" /Y /F /E
+IF EXIST "%dest_dir%" (
+	xcopy "%sourceDir%" "%dest_dir%" /Y /F /E
+)
 
 echo/
 echo Libs deployed succesfully

@@ -49,14 +49,27 @@ bool Ubidots::add(char* variableLabel, float value) {
     return add(variableLabel, value, "NULL", "NULL");
 }
 
+char* Ubidots::stringToChar(String stringValue) {
+  char* str = (char *) malloc(sizeof(char) * 255);
+//  sprintf(str, "%s", stringValue.c_str());
+//  strcpy(str, stringValue.c_str());
+  stringValue.toCharArray(str, 255);
+  return str;
+}
+
+bool Ubidots::add(String variableLabel, float value) {
+    char* str = stringToChar(variableLabel);
+    bool wasAdded = add(str, value, "NULL", "NULL");
+    free(str);
+    return wasAdded;
+}
 
 bool Ubidots::add(char* variableLabel, float value, char *context) {
     return add(variableLabel, value, context, "NULL");
 }
 
-
 bool Ubidots::add(char* variableLabel, float value, char *context, char *timestamp) {
-    strcpy((val+currentValue)->_variableLabel, variableLabel);
+    (val+currentValue)->_variableLabel = variableLabel;
     (val+currentValue)->_value = value;
     (val+currentValue)->_context = context;
     (val+currentValue)->_timestamp = timestamp;
