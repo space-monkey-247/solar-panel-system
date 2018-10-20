@@ -60,7 +60,7 @@ char* Ubidots::stringToChar(String stringValue) {
 bool Ubidots::add(String variableLabel, float value) {
     char* str = stringToChar(variableLabel);
     bool wasAdded = add(str, value, "NULL", "NULL");
-    free(str);
+    //free(str);
     return wasAdded;
 }
 
