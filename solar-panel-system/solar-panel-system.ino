@@ -549,13 +549,14 @@ void prepareMqttPublishValues() {
   serialPrintln("");
   serialPrintln("Prepare MQTT publish values:");
   
+/* OK
   serialPrintVariable(env.boilerTemp);
   mqttClient.add("boiler-temperature", env.getBoilerTemperature());
   serialPrintVariable(env.solarPanelTemp);
   mqttClient.add("solar-panel-temperature", env.getSolarPanelTemperature());
 
   // publish
-  mqttClient.ubidotsPublishOnlyValues((char *)DEVICE_LABEL);
+  mqttClient.ubidotsPublishOnlyValues((char *)DEVICE_LABEL, false);
   
   serialPrintVariable(env.pumpStatus);
   mqttClient.add("pump-status", env.pumpStatus.getFloatValue());
@@ -565,8 +566,8 @@ void prepareMqttPublishValues() {
   mqttClient.add("cycle-number", env.cycles.getFloatValue());
 
   // publish
-  mqttClient.ubidotsPublishOnlyValues((char *)DEVICE_LABEL);
-  
+  mqttClient.ubidotsPublishOnlyValues((char *)DEVICE_LABEL, false);
+*/  
 /*  
   serialPrintVariable(env.boilerTemp);
   mqttClient.add(env.boilerTemp.getLabel(), env.getBoilerTemperature());
@@ -579,18 +580,24 @@ void prepareMqttPublishValues() {
   serialPrintVariable(env.cycles);
   mqttClient.add(env.cycles.getLabel(), env.cycles.getFloatValue());
 */
-/*  
+  
   serialPrintVariable(env.boilerTemp);
   mqttClient.add(stringToChar(env.boilerTemp.getLabel()), env.getBoilerTemperature());
   serialPrintVariable(env.solarPanelTemp);
   mqttClient.add(stringToChar(env.solarPanelTemp.getLabel()), env.getSolarPanelTemperature());
+
+  // publish
+  mqttClient.ubidotsPublishOnlyValues((char *)DEVICE_LABEL, true);
+
   serialPrintVariable(env.pumpStatus);
   mqttClient.add(stringToChar(env.pumpStatus.getLabel()), env.pumpStatus.getFloatValue());
   serialPrintVariable(env.systemRunningTime);
   mqttClient.add(stringToChar(env.systemRunningTime.getLabel()), env.systemRunningTime.getFloatValue());
   serialPrintVariable(env.cycles);
   mqttClient.add(stringToChar(env.cycles.getLabel()), env.cycles.getFloatValue());
-*/
+
+  // publish
+  mqttClient.ubidotsPublishOnlyValues((char *)DEVICE_LABEL, true);
 }
 
 char* preparePayload() {

@@ -209,7 +209,7 @@ bool Ubidots::ubidotsPublish(char *deviceLabel) {
     return _client.publish(topic, payload, strlen(payload));
 }
 
-bool Ubidots::ubidotsPublishOnlyValues(char *deviceLabel) {
+bool Ubidots::ubidotsPublishOnlyValues(char *deviceLabel, bool freeMemory) {
     char topic[150];
     char payload[500];
     String str;
@@ -221,7 +221,9 @@ bool Ubidots::ubidotsPublishOnlyValues(char *deviceLabel) {
     for (int i = 0; i <= currentValue; ) {
         str = String((val+i)->_value, 2);
         sprintf(payload, "%s\"%s\": %s", payload, (val+i)->_variableLabel, str.c_str());
-        //free((val+i)->_variableLabel);
+        if (freeMemory) {
+            free((val+i)->_variableLabel);
+        }
 
         i++;
         if (i >= currentValue) {
