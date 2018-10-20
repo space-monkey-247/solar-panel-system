@@ -32,7 +32,7 @@ Modified by: Jose Garcia
 
 #define MQTT_PORT 1883
 #define SERVER "things.ubidots.com"
-#define MAX_VALUES 9
+#define MAX_VALUES 5
 #define FIRST_PART_TOPIC "/v1.6/devices/"
 #define DEFAULT_DEVICE_LABEL "ESP8266"
 
@@ -75,6 +75,7 @@ class Ubidots {
     bool loop();
     bool ubidotsSubscribe(char* deviceLabel, char* variableLabel);
     bool ubidotsPublish(char *deviceLabel);
+    bool ubidotsPublishOnlyValues(char *deviceLabel);
     void ubidotsSetBroker(char* broker);
     void reconnect();
     void setDebug(bool debug);

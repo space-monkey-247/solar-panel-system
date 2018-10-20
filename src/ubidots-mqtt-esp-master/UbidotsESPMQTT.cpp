@@ -162,7 +162,7 @@ bool Ubidots::ubidotsSubscribe(char* deviceLabel, char* variableLabel) {
 
 bool Ubidots::ubidotsPublish(char *deviceLabel) {
     char topic[150];
-    char payload[500];
+    char payload[1024];
     String str;
 
     // JSON dict: {"solar-panel-temperature": {"value": 10.00}, "boiler-temperature": {"value": 20.00}}
@@ -193,7 +193,39 @@ bool Ubidots::ubidotsPublish(char *deviceLabel) {
         Serial.println(payload);
     }
     currentValue = 0;
-    return _client.publish(topic, payload, 512);
+    return _client.publish(topic, payload, strlen(payload));
+}
+
+bool Ubidots::ubidotsPublishOnlyValues(char *deviceLabel) {
+    char topic[150];
+    char payload[1024];
+    String str;
+
+    // JSON dict: {"solar-panel-temperature": 10.00, "boiler-temperature": {"value": 20.00}}
+
+    sprintf(topic, "%s%s", FIRST_PART_TOPIC, deviceLabel);
+    sprintf(payload, "{");
+    for (int i = 0; i <= currentValue; ) {
+        str = String((val+i)->_value, 2);
+        sprintf(payload, "%s\"%s\": %s", payload, (val+i)->_variableLabel, str.c_str());
+        free((val+i)->_variableLabel);
+
+        i++;
+        if (i >= currentValue) {
+            sprintf(payload, "%s}", payload);
+            break;
+        } else {
+            sprintf(payload, "%s, ", payload);
+        }
+    }
+    if (_debug){
+        Serial.println("publishing to TOPIC: ");
+        Serial.println(topic);
+        Serial.print("JSON dict: ");
+        Serial.println(payload);
+    }
+    currentValue = 0;
+    return _client.publish(topic, payload, strlen(payload));
 }
 
 

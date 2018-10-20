@@ -8,7 +8,7 @@
 #include <UbidotsESPMQTT.h>
 #include <SolarPanelEnvironment.h>
 
-bool SERIAL_COMMUNICATION_ENABLED = false;
+bool SERIAL_COMMUNICATION_ENABLED = true;
 
 /**** Wifi Endava ****************************************************************/
 //const char* SSID_NAME = "endava-byod"; // Put here your SSID name
@@ -99,7 +99,7 @@ void mqttPublish() {
     mqttSubscribeVariables();
   }
   prepareMqttPublishValues();
-  mqttClient.ubidotsPublish((char *)DEVICE_LABEL);
+  mqttClient.ubidotsPublishOnlyValues((char *)DEVICE_LABEL);
   mqttClient.loop();
 }
 
@@ -566,8 +566,8 @@ void prepareMqttPublishValues() {
   mqttClient.add(stringToChar(env.solarPanelTemp.getLabel()), env.getSolarPanelTemperature());
   serialPrintVariable(env.pumpStatus);
   mqttClient.add(stringToChar(env.pumpStatus.getLabel()), env.pumpStatus.getFloatValue());
-  serialPrintVariable(env.systemRunningTime);
-  mqttClient.add(stringToChar(env.systemRunningTime.getLabel()), env.systemRunningTime.getFloatValue());
+//  serialPrintVariable(env.systemRunningTime);
+//  mqttClient.add(stringToChar(env.systemRunningTime.getLabel()), env.systemRunningTime.getFloatValue());
   serialPrintVariable(env.cycles);
   mqttClient.add(stringToChar(env.cycles.getLabel()), env.cycles.getFloatValue());
   
