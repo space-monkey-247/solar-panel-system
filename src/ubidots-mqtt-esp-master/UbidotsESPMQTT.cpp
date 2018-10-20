@@ -69,10 +69,10 @@ bool Ubidots::add(char* variableLabel, float value, char *context) {
 }
 
 bool Ubidots::add(char* variableLabel, float value, char *context, char *timestamp) {
-    if (_debug) {
-        Serial.print(F("adding: "));
-        Serial.println(variableLabel);
-    }
+    // if (_debug) {
+    //     Serial.print(F("adding: "));
+    //     Serial.println(variableLabel);
+    // }
 
     (val+currentValue)->_variableLabel = variableLabel;
     (val+currentValue)->_value = value;
@@ -84,9 +84,9 @@ bool Ubidots::add(char* variableLabel, float value, char *context, char *timesta
         currentValue = MAX_VALUES;
     }
 
-    if (_debug) {
-        Serial.println(F("added"));
-    }
+    // if (_debug) {
+    //     Serial.println(F("added"));
+    // }
     return true;
 }
 

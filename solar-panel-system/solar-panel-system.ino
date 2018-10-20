@@ -99,7 +99,7 @@ void mqttPublish() {
     mqttSubscribeVariables();
   }
   prepareMqttPublishValues();
-  mqttClient.ubidotsPublishOnlyValues((char *)DEVICE_LABEL);
+//  mqttClient.ubidotsPublishOnlyValues((char *)DEVICE_LABEL);
   mqttClient.loop();
 }
 
@@ -553,12 +553,20 @@ void prepareMqttPublishValues() {
   mqttClient.add("boiler-temperature", env.getBoilerTemperature());
   serialPrintVariable(env.solarPanelTemp);
   mqttClient.add("solar-panel-temperature", env.getSolarPanelTemperature());
+
+  // publish
+  mqttClient.ubidotsPublishOnlyValues((char *)DEVICE_LABEL);
+  
+  serialPrintVariable(env.pumpStatus);
   mqttClient.add("pump-status", env.pumpStatus.getFloatValue());
   serialPrintVariable(env.systemRunningTime);
   mqttClient.add("system-running-time", env.systemRunningTime.getFloatValue());
   serialPrintVariable(env.cycles);
   mqttClient.add("cycle-number", env.cycles.getFloatValue());
 
+  // publish
+  mqttClient.ubidotsPublishOnlyValues((char *)DEVICE_LABEL);
+  
 /*  
   serialPrintVariable(env.boilerTemp);
   mqttClient.add(env.boilerTemp.getLabel(), env.getBoilerTemperature());
