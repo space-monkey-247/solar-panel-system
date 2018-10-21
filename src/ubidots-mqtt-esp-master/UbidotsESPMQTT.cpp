@@ -200,13 +200,14 @@ bool Ubidots::ubidotsPublish(char *deviceLabel) {
         }
     }
     if (_debug){
-        Serial.println("publishing to TOPIC: ");
+        Serial.println(" publishing ");
+        Serial.println("  TOPIC: ");
         Serial.println(topic);
-        Serial.print("JSON dict: ");
+        Serial.print("  JSON: ");
         Serial.println(payload);
     }
     currentValue = 0;
-    return _client.publish(topic, payload, strlen(payload));
+    return _client.publish(topic, payload, 500);
 }
 
 bool Ubidots::ubidotsPublishOnlyValues(char *deviceLabel, bool freeMemory) {
@@ -233,16 +234,17 @@ bool Ubidots::ubidotsPublishOnlyValues(char *deviceLabel, bool freeMemory) {
             sprintf(payload, "%s, ", payload);
         }
     }
-    if (_debug){
-        Serial.println("publishing to TOPIC: ");
+    if (_debug) {
+        Serial.println(" publishing ");
+        Serial.print("  TOPIC: ");
         Serial.println(topic);
-        Serial.print("JSON dict: ");
+        Serial.print("  JSON: ");
         Serial.println(payload);
-        Serial.print("strlen(payload): ");
-        Serial.println(strlen(payload));
+        // Serial.print(" strlen(payload): ");
+        // Serial.println(strlen(payload));
     }
     currentValue = 0;
-    return _client.publish(topic, payload, strlen(payload));
+    return _client.publish(topic, payload, 500);
 }
 
 

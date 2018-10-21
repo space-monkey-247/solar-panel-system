@@ -98,8 +98,14 @@ void mqttPublish() {
     mqttClient.begin(callback);
     mqttSubscribeVariables();
   }
-  prepareMqttPublishValues();
-//  mqttClient.ubidotsPublishOnlyValues((char *)DEVICE_LABEL);
+  if (env.cycleNo % 4 == 0) {
+    prepareMqttPublishValues();
+  } else {
+    serialPrintln("");
+    serialPrint(" Skip publishing for cycle: ");
+    serialPrintln(String(env.cycleNo));
+  }
+  
   mqttClient.loop();
 }
 
@@ -145,7 +151,6 @@ void wifiConnecting(int retryNo) {
   if (WiFi.status() == WL_CONNECTED) {
     WiFi.setAutoReconnect(true);
     serialPrintln("WiFi Connected");
-    serialPrintln("");
     return;
   }
   WiFi.begin(SSID_NAME, SSID_PASS);
@@ -204,7 +209,7 @@ void loop(void)
   updateThePumpStatus();
   prepareSystemUpTime();
 
-  // send temperatures to ubidots
+  // send to ubidots
   //sendValuesToServer();
   mqttPublish();
 
@@ -547,8 +552,26 @@ char* stringToChar(String stringValue) {
 
 void prepareMqttPublishValues() {
   serialPrintln("");
-  serialPrintln("Prepare MQTT publish values:");
+  serialPrintln("Prepare MQTT publishing values:");
   
+  serialPrintVariable(env.boilerTemp);
+  mqttClient.add(stringToChar(env.boilerTemp.getLabel()), env.getBoilerTemperature());
+  serialPrintVariable(env.solarPanelTemp);
+  mqttClient.add(stringToChar(env.solarPanelTemp.getLabel()), env.getSolarPanelTemperature());
+
+  // publish
+  mqttClient.ubidotsPublishOnlyValues((char *)DEVICE_LABEL, true);
+
+  serialPrintVariable(env.pumpStatus);
+  mqttClient.add(stringToChar(env.pumpStatus.getLabel()), env.pumpStatus.getFloatValue());
+  serialPrintVariable(env.systemRunningTime);
+  mqttClient.add(stringToChar(env.systemRunningTime.getLabel()), env.systemRunningTime.getFloatValue());
+  serialPrintVariable(env.cycles);
+  mqttClient.add(stringToChar(env.cycles.getLabel()), env.cycles.getFloatValue());
+
+  // publish
+  mqttClient.ubidotsPublishOnlyValues((char *)DEVICE_LABEL, true);
+
 /* OK
   serialPrintVariable(env.boilerTemp);
   mqttClient.add("boiler-temperature", env.getBoilerTemperature());
@@ -580,24 +603,6 @@ void prepareMqttPublishValues() {
   serialPrintVariable(env.cycles);
   mqttClient.add(env.cycles.getLabel(), env.cycles.getFloatValue());
 */
-  
-  serialPrintVariable(env.boilerTemp);
-  mqttClient.add(stringToChar(env.boilerTemp.getLabel()), env.getBoilerTemperature());
-  serialPrintVariable(env.solarPanelTemp);
-  mqttClient.add(stringToChar(env.solarPanelTemp.getLabel()), env.getSolarPanelTemperature());
-
-  // publish
-  mqttClient.ubidotsPublishOnlyValues((char *)DEVICE_LABEL, true);
-
-  serialPrintVariable(env.pumpStatus);
-  mqttClient.add(stringToChar(env.pumpStatus.getLabel()), env.pumpStatus.getFloatValue());
-  serialPrintVariable(env.systemRunningTime);
-  mqttClient.add(stringToChar(env.systemRunningTime.getLabel()), env.systemRunningTime.getFloatValue());
-  serialPrintVariable(env.cycles);
-  mqttClient.add(stringToChar(env.cycles.getLabel()), env.cycles.getFloatValue());
-
-  // publish
-  mqttClient.ubidotsPublishOnlyValues((char *)DEVICE_LABEL, true);
 }
 
 char* preparePayload() {
