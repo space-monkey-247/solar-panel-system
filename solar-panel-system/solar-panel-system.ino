@@ -11,11 +11,11 @@
 bool SERIAL_COMMUNICATION_ENABLED = true;
 
 /**** Wifi Endava ****************************************************************/
-//const char* SSID_NAME = "endava-byod"; // Put here your SSID name
-//const char* SSID_PASS = "Agile-Transformation-Innovative-Solutions"; // Put here your password
+const char* SSID_NAME = "endava-byod"; // Put here your SSID name
+const char* SSID_PASS = "Agile-Transformation-Innovative-Solutions"; // Put here your password
 /**** Rooter Bogdan ****************************************************************/
-const char* SSID_NAME = "Telekom-rOlKBz"; // Put here your SSID name
-const char* SSID_PASS = "36kexrah4e1s"; // Put here your password
+//const char* SSID_NAME = "Telekom-rOlKBz"; // Put here your SSID name
+//const char* SSID_PASS = "36kexrah4e1s"; // Put here your password
 /**** Hotspot Tudor ****************************************************************/
 // const char* SSID_NAME = "Tudor Hotspot"; // Put here your SSID name
 // const char* SSID_PASS = "Tudor123!"; // Put here your password
@@ -92,16 +92,24 @@ void mqttSubscribeVariables() {
 }
 
 void mqttPublish() {
-  if(!mqttClient.connected()) {
-    serialPrintln("mqttClient.reconnect();");
+  serialPrintln("");
+  
+  // reconnect at x minutes
+  int reconnectMinutes = 10;
+  long reconnectCycles = (long) reconnectMinutes * 60 * 1000 / env.DEFAULT_READ_INTERVAL;
+  bool scheduledReconnect = env.cycleNo % reconnectCycles == 0;
+
+  if (scheduledReconnect || !mqttClient.connected()) {
+    serialPrintln("MQTT Client: reconnect");
     mqttClient.reconnect();
-    mqttClient.begin(callback);
+    //mqttClient.begin(callback);
     mqttSubscribeVariables();
   }
-  if (env.cycleNo % 4 == 0) {
+
+  // skip publishing
+  if (env.cycleNo % 2 == 0) {
     prepareMqttPublishValues();
   } else {
-    serialPrintln("");
     serialPrint(" Skip publishing for cycle: ");
     serialPrintln(String(env.cycleNo));
   }
@@ -551,7 +559,6 @@ char* stringToChar(String stringValue) {
 }
 
 void prepareMqttPublishValues() {
-  serialPrintln("");
   serialPrintln("Prepare MQTT publishing values:");
   
   serialPrintVariable(env.boilerTemp);
