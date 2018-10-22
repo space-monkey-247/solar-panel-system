@@ -73,9 +73,57 @@ void callback(char* topic, byte* payload, unsigned int length) {
   Serial.print("Message arrived [");
   Serial.print(topic);
   Serial.print("] ");
+//  char strPayload = 
+  char strPayload[length];
   for (int i=0;i<length;i++) {
     Serial.print((char)payload[i]);
+    strPayload[i] = (char)payload[i];
   }
+  Serial.println();
+  Serial.print("strPayload: [");
+  Serial.print(strPayload);
+  Serial.println("]");
+  Serial.print("length: ");
+  Serial.println(length);
+  
+  // Message arrived [/v1.6/devices/solar-panel-test-env/pump-start/lv] 13
+  String stringTopic = String(topic);
+  String stringDeviceLabel = String(DEVICE_LABEL);
+  uint8_t deviceLabelInitialPos = stringTopic.indexOf(stringDeviceLabel);
+  uint8_t variableLabelInitialPos = deviceLabelInitialPos + stringDeviceLabel.length();
+  stringTopic = stringTopic.substring(variableLabelInitialPos);
+  String label = stringTopic.substring(stringTopic.indexOf("/"));
+  String value = String(strPayload);
+  serialPrintF("  label: %s\n", label);
+  serialPrintF("  value: %s\n", value);
+
+  if (label == "NULL") {
+    serialPrintln(" Label is NULL");
+    return;
+  }
+
+  for (int idx = 0; idx < env.downloadVariablesSize; idx++) {
+    serialPrintln(" check");
+    serialPrintVariable(*env.downloadVariables[idx]);
+    Variable& variable = *env.downloadVariables[idx];
+    if (variable.getLabel().equalsIgnoreCase(label)) {
+      serialPrintln(" variable found");
+      updateVariableByRef(variable);
+    }
+  }
+
+//    Serial.println("response2 {");
+//    Serial.println(response);
+//    Serial.println("}");
+
+    // bodyPosinit = 7 + response.indexOf("\r\n");
+    // response = response.substring(bodyPosinit);
+    // uint8_t bodyPosend = response.indexOf("\r\n");
+    // String value = response.substring(0, bodyPosend);
+    // serialPrintF("  Retrieved value: %s\n", value);
+//  Variable& variable = *env.downloadVariables[env.variableDownloadIndex];
+//  updateVariableByRef(variable);
+  
   Serial.println();
 }
 
@@ -102,7 +150,7 @@ void mqttPublish() {
   if (scheduledReconnect || !mqttClient.connected()) {
     serialPrintln("MQTT Client: reconnect");
     mqttClient.reconnect();
-    //mqttClient.begin(callback);
+    mqttClient.begin(callback);
     mqttSubscribeVariables();
   }
 
@@ -561,19 +609,19 @@ char* stringToChar(String stringValue) {
 void prepareMqttPublishValues() {
   serialPrintln("Prepare MQTT publishing values:");
   
-  serialPrintVariable(env.boilerTemp);
+//  serialPrintVariable(env.boilerTemp);
   mqttClient.add(stringToChar(env.boilerTemp.getLabel()), env.getBoilerTemperature());
-  serialPrintVariable(env.solarPanelTemp);
+//  serialPrintVariable(env.solarPanelTemp);
   mqttClient.add(stringToChar(env.solarPanelTemp.getLabel()), env.getSolarPanelTemperature());
 
   // publish
   mqttClient.ubidotsPublishOnlyValues((char *)DEVICE_LABEL, true);
 
-  serialPrintVariable(env.pumpStatus);
+//  serialPrintVariable(env.pumpStatus);
   mqttClient.add(stringToChar(env.pumpStatus.getLabel()), env.pumpStatus.getFloatValue());
-  serialPrintVariable(env.systemRunningTime);
+//  serialPrintVariable(env.systemRunningTime);
   mqttClient.add(stringToChar(env.systemRunningTime.getLabel()), env.systemRunningTime.getFloatValue());
-  serialPrintVariable(env.cycles);
+//  serialPrintVariable(env.cycles);
   mqttClient.add(stringToChar(env.cycles.getLabel()), env.cycles.getFloatValue());
 
   // publish
