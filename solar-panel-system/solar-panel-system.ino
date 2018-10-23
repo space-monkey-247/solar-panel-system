@@ -10,11 +10,11 @@
 bool SERIAL_COMMUNICATION_ENABLED = true;
 
 /**** Wifi Endava ******************************************************************/
-//const char* SSID_NAME = "endava-byod";
-//const char* SSID_PASS = "Agile-Transformation-Innovative-Solutions";
+const char* SSID_NAME = "endava-byod";
+const char* SSID_PASS = "Agile-Transformation-Innovative-Solutions";
 /**** Rooter Bogdan ****************************************************************/
-const char* SSID_NAME = "Telekom-rOlKBz";
-const char* SSID_PASS = "36kexrah4e1s";
+//const char* SSID_NAME = "Telekom-rOlKBz";
+//const char* SSID_PASS = "36kexrah4e1s";
 /**** Hotspot Tudor ****************************************************************/
 // const char* SSID_NAME = "Tudor Hotspot";
 // const char* SSID_PASS = "Tudor123!";
@@ -69,61 +69,80 @@ void setup(void) {
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
-  Serial.print("Message arrived [");
-  Serial.print(topic);
-  Serial.print("] ");
-//  char strPayload = 
-  char strPayload[length];
-  for (int i=0;i<length;i++) {
-    Serial.print((char)payload[i]);
-    strPayload[i] = (char)payload[i];
-  }
-  Serial.println();
-  Serial.print("strPayload: [");
-  Serial.print(strPayload);
-  Serial.println("]");
-  Serial.print("length: ");
-  Serial.println(length);
-  
+  serialPrintln("");
+  serialPrintln("Message arrived");
+
   // Message arrived [/v1.6/devices/solar-panel-test-env/pump-start/lv] 13
-  String stringTopic = String(topic);
-  String stringDeviceLabel = String(DEVICE_LABEL);
-  uint8_t deviceLabelInitialPos = stringTopic.indexOf(stringDeviceLabel);
-  uint8_t variableLabelInitialPos = deviceLabelInitialPos + stringDeviceLabel.length();
-  stringTopic = stringTopic.substring(variableLabelInitialPos);
-  String label = stringTopic.substring(stringTopic.indexOf("/"));
-  String value = String(strPayload);
-  serialPrintF("  label: %s\n", label);
-  serialPrintF("  value: %s\n", value);
+
+  serialPrint(" topic: [");
+  serialPrint(String(topic));
+  serialPrintln("] ");
+  
+  serialPrint(" length: ");
+  serialPrintln(String(length));
+
+  serialPrint(" payload: [");
+  for (int i=0; i<length; i++) {
+    serialPrint(String((char)payload[i]));
+  }
+  serialPrintln("]");
+
+  String label = extractLabel(topic); 
+  String value = extractValue(payload, length); 
 
   if (label == "NULL") {
     serialPrintln(" Label is NULL");
     return;
   }
 
+//  serialPrintln(" Check all the downloadVariables");
   for (int idx = 0; idx < env.downloadVariablesSize; idx++) {
-    serialPrintln(" check");
-    serialPrintVariable(*env.downloadVariables[idx]);
+//    serialPrintVariable(*env.downloadVariables[idx]);
     Variable& variable = *env.downloadVariables[idx];
     if (variable.getLabel().equalsIgnoreCase(label)) {
-      serialPrintln(" variable found");
-      updateVariableByRef(variable);
+//      serialPrintln("  variable found");
+      updateVariableByRef(variable, value);
+      break;
     }
   }
+ }
 
-//    Serial.println("response2 {");
-//    Serial.println(response);
-//    Serial.println("}");
+String extractValue(byte* payload, unsigned int length) {
+  // char* charArrayPayload = (char*) payload;
+  // Serial.println();
+  // Serial.print("charArrayPayload: [");
+  // Serial.print(charArrayPayload);
+  // Serial.println("]");
+  String value = "";
+  for (int i=0; i<length; i++) {
+    value.concat(String((char)payload[i]));
+  }
+  // String value = String(charArrayPayload);
+  // value = value.substring(0, value.indexOf(" "));
+  serialPrintF(" value: %s\n", value);
+  return value;
+}
 
-    // bodyPosinit = 7 + response.indexOf("\r\n");
-    // response = response.substring(bodyPosinit);
-    // uint8_t bodyPosend = response.indexOf("\r\n");
-    // String value = response.substring(0, bodyPosend);
-    // serialPrintF("  Retrieved value: %s\n", value);
-//  Variable& variable = *env.downloadVariables[env.variableDownloadIndex];
-//  updateVariableByRef(variable);
-  
-  Serial.println();
+String extractLabel(char* topic) {
+  String stringTopic = String(topic);
+  String stringDeviceLabel = String(DEVICE_LABEL);
+  uint8_t deviceLabelInitialPos = stringTopic.indexOf(stringDeviceLabel);
+  uint8_t variableLabelInitialPos = deviceLabelInitialPos + stringDeviceLabel.length() + 1;
+  stringTopic = stringTopic.substring(variableLabelInitialPos);
+  String label = stringTopic.substring(0, stringTopic.indexOf("/"));
+  serialPrintF(" label: %s\n", label);
+  return label;
+}
+
+void updateVariableByRef(Variable& variable, String stringValue) {
+  serialPrintCalculatedValue("existing value", variable.getStringValue());
+//  Serial.println(variable.getLabel() + " before: " + variable.getStringValue());
+
+  if (stringValue != NULL && stringValue.length() > 0) {
+    variable.setStringValue(stringValue);
+//    Serial.println(variable.getLabel() + " after1: " + variable.getStringValue());
+//    Serial.println(variable.getLabel() + " after2: " + String(variable.getFloatValue()));
+  }
 }
 
 void mqttSetup() {
@@ -329,7 +348,7 @@ void downloadAndUpdateEnvironmentVariables() {
 
 void updateVariableByRef(Variable& variable) {
   String stringValue = getServerValue(variable.getLabel());
-  serialPrintCalculatedValue("Old value", variable.getStringValue());
+  serialPrintCalculatedValue("existing value", variable.getStringValue());
 //  Serial.println(variable.getLabel() + " before: " + variable.getStringValue());
 
   if (stringValue != NULL && stringValue.length() > 0) {
@@ -341,7 +360,7 @@ void updateVariableByRef(Variable& variable) {
 
 void updateVariable(Variable* variable) {
   String stringValue = getServerValue(variable->getLabel());
-  serialPrintCalculatedValue("Old value", variable->getStringValue());
+  serialPrintCalculatedValue("existing value", variable->getStringValue());
 //  Serial.println(variable->getLabel() + " before: " + variable->getStringValue());
 
   if (stringValue != NULL && stringValue.length() > 0) {
@@ -455,7 +474,7 @@ void serialPrintVariable(Variable variable) {
 
 void serialPrintCalculatedValue(const char* variableLabel, String value) {
   char* str = (char *) malloc(sizeof(char) * 255);
-  sprintf(str, "  %s: ", variableLabel);
+  sprintf(str, " %s: ", variableLabel);
   serialPrint(str);
   serialPrintln(value);
   free(str);
@@ -530,13 +549,13 @@ void runAutoIVSystemModeComputations() {
 }
 
 void printEnvironmentComtutedValues() {
-  serialPrintCalculatedValue("targetDelta", String(env.targetDelta));
-  serialPrintCalculatedValue("start", String(env.start));
-  serialPrintCalculatedValue("stop", String(env.stop));
-  serialPrintCalculatedValue("env.getSolarPanelTemperature()", String(env.getSolarPanelTemperature()));
-  serialPrintCalculatedValue("env.getBoilerTemperature()", String(env.getBoilerTemperature()));
-  serialPrintCalculatedValue("isPanelSafetyON", String(env.isPanelSafetyON()));
-  serialPrintCalculatedValue("env.pumpON", String(env.pumpON));
+  serialPrintCalculatedValue(" targetDelta", String(env.targetDelta));
+  serialPrintCalculatedValue(" start", String(env.start));
+  serialPrintCalculatedValue(" stop", String(env.stop));
+  serialPrintCalculatedValue(" env.getSolarPanelTemperature()", String(env.getSolarPanelTemperature()));
+  serialPrintCalculatedValue(" env.getBoilerTemperature()", String(env.getBoilerTemperature()));
+  serialPrintCalculatedValue(" isPanelSafetyON", String(env.isPanelSafetyON()));
+  serialPrintCalculatedValue(" env.pumpON", String(env.pumpON));
 }
 
 void printErrorMessages() {
