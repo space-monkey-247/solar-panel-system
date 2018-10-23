@@ -1,4 +1,3 @@
-/********************************************************************/
 // First we include the libraries
 #include <OneWire.h>
 #include <DallasTemperature.h>
@@ -10,15 +9,15 @@
 
 bool SERIAL_COMMUNICATION_ENABLED = true;
 
-/**** Wifi Endava ****************************************************************/
-const char* SSID_NAME = "endava-byod"; // Put here your SSID name
-const char* SSID_PASS = "Agile-Transformation-Innovative-Solutions"; // Put here your password
+/**** Wifi Endava ******************************************************************/
+//const char* SSID_NAME = "endava-byod";
+//const char* SSID_PASS = "Agile-Transformation-Innovative-Solutions";
 /**** Rooter Bogdan ****************************************************************/
-//const char* SSID_NAME = "Telekom-rOlKBz"; // Put here your SSID name
-//const char* SSID_PASS = "36kexrah4e1s"; // Put here your password
+const char* SSID_NAME = "Telekom-rOlKBz";
+const char* SSID_PASS = "36kexrah4e1s";
 /**** Hotspot Tudor ****************************************************************/
-// const char* SSID_NAME = "Tudor Hotspot"; // Put here your SSID name
-// const char* SSID_PASS = "Tudor123!"; // Put here your password
+// const char* SSID_NAME = "Tudor Hotspot";
+// const char* SSID_PASS = "Tudor123!";
 
 
 const char* TOKEN = "A1E-Brpd96xLq77tUwPkpXsXvCHCzdX4dZ";
@@ -94,12 +93,7 @@ void mqttSubscribeVariables() {
 void mqttPublish() {
   serialPrintln("");
   
-  // reconnect at x minutes
-  int reconnectMinutes = 10;
-  long reconnectCycles = (long) reconnectMinutes * 60 * 1000 / env.DEFAULT_READ_INTERVAL;
-  bool scheduledReconnect = env.cycleNo % reconnectCycles == 0;
-
-  if (scheduledReconnect || !mqttClient.connected()) {
+  if (!mqttClient.connected()) {
     serialPrintln("MQTT Client: reconnect");
     mqttClient.reconnect();
     //mqttClient.begin(callback);
@@ -115,6 +109,18 @@ void mqttPublish() {
   }
   
   mqttClient.loop();
+
+  // reconnect at x minutes
+  int reconnectMinutes = 30;
+  long reconnectCycles = (long) reconnectMinutes * 60 * 1000 / env.DEFAULT_READ_INTERVAL;
+  bool scheduledReconnect = env.cycleNo % reconnectCycles == 0;
+
+  if (scheduledReconnect) {
+    serialPrintln("MQTT Client: scheduled reconnect");
+    // force reconnecting
+    WiFi.disconnect();
+    mqttClient.disconnect();
+  }
 }
 
 void serialSetup() {
@@ -558,26 +564,37 @@ char* stringToChar(String stringValue) {
   return str;
 }
 
+void mqttPublishValues() {
+  // publish
+  bool published = mqttClient.ubidotsPublishOnlyValues((char *)DEVICE_LABEL, true);
+  if (!published) {
+    serialPrintln("");
+    serialPrintln("[Error] MQTT client unable to publish.");
+    // force reconnecting
+    WiFi.disconnect();
+    delay(500);
+    mqttClient.disconnect();
+  }
+}
+
 void prepareMqttPublishValues() {
   serialPrintln("Prepare MQTT publishing values:");
   
-  serialPrintVariable(env.boilerTemp);
+//  serialPrintVariable(env.boilerTemp);
   mqttClient.add(stringToChar(env.boilerTemp.getLabel()), env.getBoilerTemperature());
-  serialPrintVariable(env.solarPanelTemp);
+//  serialPrintVariable(env.solarPanelTemp);
   mqttClient.add(stringToChar(env.solarPanelTemp.getLabel()), env.getSolarPanelTemperature());
 
-  // publish
-  mqttClient.ubidotsPublishOnlyValues((char *)DEVICE_LABEL, true);
+  mqttPublishValues();
 
-  serialPrintVariable(env.pumpStatus);
+//  serialPrintVariable(env.pumpStatus);
   mqttClient.add(stringToChar(env.pumpStatus.getLabel()), env.pumpStatus.getFloatValue());
-  serialPrintVariable(env.systemRunningTime);
+//  serialPrintVariable(env.systemRunningTime);
   mqttClient.add(stringToChar(env.systemRunningTime.getLabel()), env.systemRunningTime.getFloatValue());
-  serialPrintVariable(env.cycles);
+//  serialPrintVariable(env.cycles);
   mqttClient.add(stringToChar(env.cycles.getLabel()), env.cycles.getFloatValue());
 
-  // publish
-  mqttClient.ubidotsPublishOnlyValues((char *)DEVICE_LABEL, true);
+  mqttPublishValues();
 
 /* OK
   serialPrintVariable(env.boilerTemp);
