@@ -91,12 +91,12 @@ bool Ubidots::add(char* variableLabel, float value, char *context, char *timesta
 }
 
 
-bool Ubidots::connected(){
+bool Ubidots::connected() {
     return _client.connected();
 }
 
 
-char* Ubidots::getMac(){
+char* Ubidots::getMac() {
     // Obtains the MAC of the device
     Serial.println("entra");
     byte mac[6];
@@ -141,6 +141,10 @@ void Ubidots::reconnect() {
   }
 }
 
+void Ubidots::disconnect() {
+    _client.disconnect();
+    delay(500);
+}
 
 void Ubidots::setDebug(bool debug){
     _debug = debug;

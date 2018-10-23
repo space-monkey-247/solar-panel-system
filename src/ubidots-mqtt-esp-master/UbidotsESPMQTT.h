@@ -78,6 +78,7 @@ class Ubidots {
     bool ubidotsPublishOnlyValues(char *deviceLabel, bool freeMemory);
     void ubidotsSetBroker(char* broker);
     void reconnect();
+    void disconnect();
     void setDebug(bool debug);
     bool wifiConnection(char* ssid, char* pass);
     char* stringToChar(String stringValue);
