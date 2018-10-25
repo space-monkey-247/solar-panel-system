@@ -22,9 +22,15 @@ class SolarPanelEnvironment {
     unsigned long cycleNo = 0;
 
     // current status
-    Variable boilerTemp = Variable("boiler-temperature", "0");
     Variable solarPanelTemp = Variable("solar-panel-temperature", "0");
+    Variable boilerTemp = Variable("boiler-temperature", "0");
     Variable pumpStatus = Variable("pump-status", "0");
+
+    // Variable* downloadVariables[10] = {
+    //   &Variable("boiler-temperature1", "0"),
+    //   &Variable("boiler-temperature2", "0"),
+    //   &Variable("boiler-temperature3", "0")
+    // };
 
     // control panel
     bool firstRun = true;
@@ -44,16 +50,16 @@ class SolarPanelEnvironment {
     Variable systemRunningTime = Variable("system-running-time", "0");
     Variable cycles = Variable("cycle-number", "0");
     Variable messages = Variable("messages");
+    Variable solarPanelIndex = Variable("solar-panel-index", "1");
+    Variable boilerTemperatureSensors = Variable("boiler-temperature-sensors", "3");
 
     // running
     Variable targetBoilerTemp = Variable("target-boiler-temperature", "65");
-    Variable minRunningTemperature = Variable("min-running-temperature", "40");
     Variable startPump = Variable("pump-start", "10");
     Variable stopPump = Variable("pump-stop", "5");
 
     // alter values
     Variable alterSolarPanelTemp = Variable("alter-solar-panel-temperature", "0");
-    Variable alterTargetDeltaValue = Variable("alter-delta-value", "0");
     Variable alterBoilerTemp = Variable("alter-boiler-temperature", "0");
 
     // safety
@@ -63,12 +69,10 @@ class SolarPanelEnvironment {
     Variable* downloadVariables[10] = {
       &systemMode,
       &targetBoilerTemp,
-      &minRunningTemperature,
       &startPump,
       &stopPump,
       &alterBoilerTemp,
       &alterSolarPanelTemp,
-      &alterTargetDeltaValue,
       &solarPanelMaxTemp,
       &solarPanelMinTemp
     };

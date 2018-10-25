@@ -17,10 +17,8 @@ bool SolarPanelEnvironment::isPanelSafetyON() {
 }
 
 void SolarPanelEnvironment::checkPumpONState() {
-  if ((isPanelSafetyON() == true) || (
-		  (getSolarPanelTemperature() >= getBoilerTemperature() + start) &&
-      (getSolarPanelTemperature() >= minRunningTemperature.getFloatValue())
-    )) {
+  if (isPanelSafetyON() == true || 
+		  getSolarPanelTemperature() >= getBoilerTemperature() + start) {
     // getSolarPanelTemperature() >= 45 + 22.75 = 67.75
 		pumpON = true;
 	}
@@ -57,16 +55,7 @@ void SolarPanelEnvironment::init(unsigned long currentMillis) {
       break;
     case 2: // Vacation
       break;
-    case 3: // Auto I
-      startPump.setIntValue(10);
-      stopPump.setIntValue(5);
-      break;
-    case 4: // Auto II
-      startPump.setIntValue(60);
-      stopPump.setIntValue(30);
-      break;
-    case 5: // Auto III = I + II
-      alterTargetDeltaValue.setIntValue(20);
+    case 3: // Auto
       startPump.setIntValue(10);
       stopPump.setIntValue(5);
       break;

@@ -10,11 +10,11 @@
 bool SERIAL_COMMUNICATION_ENABLED = true;
 
 /**** Wifi Endava ******************************************************************/
-const char* SSID_NAME = "endava-byod";
-const char* SSID_PASS = "Agile-Transformation-Innovative-Solutions";
+//const char* SSID_NAME = "endava-byod";
+//const char* SSID_PASS = "Agile-Transformation-Innovative-Solutions";
 /**** Rooter Bogdan ****************************************************************/
-//const char* SSID_NAME = "Telekom-rOlKBz";
-//const char* SSID_PASS = "36kexrah4e1s";
+const char* SSID_NAME = "Telekom-rOlKBz";
+const char* SSID_PASS = "36kexrah4e1s";
 /**** Hotspot Tudor ****************************************************************/
 // const char* SSID_NAME = "Tudor Hotspot";
 // const char* SSID_PASS = "Tudor123!";
@@ -100,7 +100,6 @@ void callback(char* topic, byte* payload, unsigned int length) {
 //    serialPrintVariable(*env.downloadVariables[idx]);
     Variable& variable = *env.downloadVariables[idx];
     if (variable.getLabel().equalsIgnoreCase(label)) {
-//      serialPrintln("  variable found");
       updateVariableByRef(variable, value);
       break;
     }
@@ -117,8 +116,6 @@ String extractValue(byte* payload, unsigned int length) {
   for (int i=0; i<length; i++) {
     value.concat(String((char)payload[i]));
   }
-  // String value = String(charArrayPayload);
-  // value = value.substring(0, value.indexOf(" "));
   serialPrintF(" value: %s\n", value);
   return value;
 }
@@ -279,9 +276,6 @@ void loop(void)
   // try to reconnecting for 3 times
   wifiConnecting(3);
   
-  // get variables from ubidots
-  //downloadAndUpdateEnvironmentVariables();
-  
   // read temperature of wired devices
   readTemperatures();
   
@@ -291,7 +285,6 @@ void loop(void)
   prepareSystemUpTime();
 
   // send to ubidots
-  //sendValuesToServer();
   mqttPublish();
 
   serialPrintln("");
@@ -315,72 +308,6 @@ void serialPrint(String strValue) {
   Serial.print(strValue);
 }
 
-void downloadAndUpdateEnvironmentVariables() {
-  if (env.firstRun == false) {
-    updateVariable(&env.controlPanelVariablesChanged);
-  } else {
-    env.firstRun = false;
-  }
-
-  // reset the index if the flag is true
-  if (env.controlPanelVariablesChanged.getIntValue() == true) {
-    env.variableDownloadIndex = 0;
-    //env.messages.setStringValue(String("[Variables update] Starting ..."));
-  }
-  // exit if the iteration has finised updateing all the vars
-  if (env.controlPanelVariablesChanged.getIntValue() == false &&
-      env.variableDownloadIndex == 0) {
-    return;
-  }
-
-  // Update environment variables one by one
-  Variable& variable = *env.downloadVariables[env.variableDownloadIndex];
-  updateVariableByRef(variable);
-//  env.messages.setStringValue(String("[Variables update] " + variable.getLabel() + ": done" ));
-
-  env.variableDownloadIndex++;
-  // reset index if reaching the end of the array
-  if (env.variableDownloadIndex == env.downloadVariablesSize) {
-    env.variableDownloadIndex = 0;
-//    env.messages.setStringValue(String("[Variables update] Done"));
-  }
-}
-
-void updateVariableByRef(Variable& variable) {
-  String stringValue = getServerValue(variable.getLabel());
-  serialPrintCalculatedValue("existing value", variable.getStringValue());
-//  Serial.println(variable.getLabel() + " before: " + variable.getStringValue());
-
-  if (stringValue != NULL && stringValue.length() > 0) {
-    variable.setStringValue(stringValue);
-//    Serial.println(variable.getLabel() + " after1: " + variable.getStringValue());
-//    Serial.println(variable.getLabel() + " after2: " + String(variable.getFloatValue()));
-  }
-}
-
-void updateVariable(Variable* variable) {
-  String stringValue = getServerValue(variable->getLabel());
-  serialPrintCalculatedValue("existing value", variable->getStringValue());
-//  Serial.println(variable->getLabel() + " before: " + variable->getStringValue());
-
-  if (stringValue != NULL && stringValue.length() > 0) {
-    variable->setStringValue(stringValue);
-//    Serial.println(variable->getLabel() + " after1: " + variable->getStringValue());
-//    Serial.println(variable->getLabel() + " after2: " + String(variable->getFloatValue()));
-  }
-}
-
-void updateVariableValue(Variable variable) {
-  String stringValue = getServerValue(variable.getLabel());
-  Serial.println(variable.getLabel() + " before: " + variable.getStringValue());
-
-  if (stringValue != NULL && stringValue.length() > 0) {
-    variable.setStringValue(stringValue);
-    Serial.println(variable.getLabel() + " after1: " + variable.getStringValue());
-    Serial.println(variable.getLabel() + " after2: " + String(variable.getFloatValue()));
-  }
-}
-
 void runSystemComputations() {
   serialPrintln("");
   serialPrintln(F("Computing:"));
@@ -400,16 +327,8 @@ void runSystemComputations() {
       env.pumpON = true;
       break;
     case 3:
-      // Auto I
-      runAutoISystemModeComputations();
-      break;
-    case 4:
-      // Auto II
-      runAutoIISystemModeComputations();
-      break;
-    case 5:
-      // Auto III = II + I
-      runAutoIIISystemModeComputations();
+      // Auto
+      runAutoSystemModeComputations();
       break;
   }
 
@@ -488,64 +407,12 @@ void printControlPanelVariables() {
   }
 }
 
-void runAutoISystemModeComputations() {
+void runAutoSystemModeComputations() {
   // start & stop are constants
   // start = 10;
   env.start = env.startPump.getFloatValue();
   // stop = 5;
   env.stop = env.stopPump.getFloatValue();
-}
-
-void runAutoIISystemModeComputations() {
-  // start & stop represent a percentage from targetDelta
-  // targetDelta = 65 + 15 - 45 = 80 - 45 = 35
-  float targetDelta = env.targetBoilerTemp.getFloatValue()
-                    + env.alterTargetDeltaValue.getFloatValue()
-                    - env.getBoilerTemperature();
-  if (targetDelta < 0) {
-    targetDelta = 0;
-  }
-  // start = 35 * 65 / 100 = 22.75
-  env.start = (targetDelta * env.startPump.getFloatValue()) / 100;
-  // stop = 35 * 15 / 100 = 5.25
-  env.stop = (targetDelta * env.stopPump.getFloatValue()) / 100;
-}
-
-void runAutoIIISystemModeComputations() {
-  // targetDelta = 65 + 15 - 45 = 80 - 45 = 35
-  float targetDelta = env.targetBoilerTemp.getFloatValue()
-                    - env.getBoilerTemperature();
-  if (targetDelta < 0) {
-    targetDelta = 0;
-  }
-  // start = 35 * 65 / 100 = 22.75
-  env.start = env.startPump.getFloatValue() + (targetDelta * env.alterTargetDeltaValue.getFloatValue()) / 100;
-  // stop = 35 * 15 / 100 = 5.25
-  env.stop = env.stopPump.getFloatValue() + (targetDelta * env.alterTargetDeltaValue.getFloatValue()) / 100;
-}
-
-void runAutoIVSystemModeComputations() {
-  serialPrintln(" System mode: Auto IV");
-  printControlPanelVariables();
-
-  // targetDelta = 65 + 15 - 45 = 80 - 45 = 35
-  float targetDelta = env.targetBoilerTemp.getFloatValue()
-                    - env.getBoilerTemperature();
-  if (targetDelta < 0) {
-    targetDelta = 0;
-  }
-  // start = 35 * 65 / 100 = 22.75
-  env.start = env.startPump.getFloatValue()
-    + (targetDelta * env.alterTargetDeltaValue.getFloatValue()) / 100;
-  // stop = 35 * 15 / 100 = 5.25
-  env.stop = env.startPump.getFloatValue()
-    + (targetDelta * env.alterTargetDeltaValue.getFloatValue()) / 100;
-
-  env.checkPumpONState();
-  printErrorMessages();
-
-  serialPrintln(" Computed values: ");
-  printEnvironmentComtutedValues();
 }
 
 void printEnvironmentComtutedValues() {
@@ -594,6 +461,7 @@ void readTemperatures() {
   lcdPrint(15, 0, (char)223);
 
   /*** solar panel *************************************************************/
+//  float temp2 = sensors.getTempCByIndex(env.solarPanelIndex.getIntValue());
   float temp2 = sensors.getTempCByIndex(1);
   env.solarPanelTemp.setFloatValue(temp2);
 //  serialPrintFloat(" Solar panel temperature is: %.2f\n", temp2);
@@ -662,184 +530,5 @@ void prepareMqttPublishValues() {
   mqttClient.add(stringToChar(env.cycles.getLabel()), env.cycles.getFloatValue());
 
   mqttPublishValues();
-
-/* OK
-  serialPrintVariable(env.boilerTemp);
-  mqttClient.add("boiler-temperature", env.getBoilerTemperature());
-  serialPrintVariable(env.solarPanelTemp);
-  mqttClient.add("solar-panel-temperature", env.getSolarPanelTemperature());
-
-  // publish
-  mqttClient.ubidotsPublishOnlyValues((char *)DEVICE_LABEL, false);
-  
-  serialPrintVariable(env.pumpStatus);
-  mqttClient.add("pump-status", env.pumpStatus.getFloatValue());
-  serialPrintVariable(env.systemRunningTime);
-  mqttClient.add("system-running-time", env.systemRunningTime.getFloatValue());
-  serialPrintVariable(env.cycles);
-  mqttClient.add("cycle-number", env.cycles.getFloatValue());
-
-  // publish
-  mqttClient.ubidotsPublishOnlyValues((char *)DEVICE_LABEL, false);
-*/  
-/*  
-  serialPrintVariable(env.boilerTemp);
-  mqttClient.add(env.boilerTemp.getLabel(), env.getBoilerTemperature());
-  serialPrintVariable(env.solarPanelTemp);
-  mqttClient.add(env.solarPanelTemp.getLabel(), env.getSolarPanelTemperature());
-  serialPrintVariable(env.pumpStatus);
-  mqttClient.add(env.pumpStatus.getLabel(), env.pumpStatus.getFloatValue());
-  serialPrintVariable(env.systemRunningTime);
-  mqttClient.add(env.systemRunningTime.getLabel(), env.systemRunningTime.getFloatValue());
-  serialPrintVariable(env.cycles);
-  mqttClient.add(env.cycles.getLabel(), env.cycles.getFloatValue());
-*/
 }
 
-char* preparePayload() {
-  // Transforms the values of the sensors to char type
-  char str_val_1[30];
-  char str_val_2[30];
-  dtostrf(env.getBoilerTemperature(), 4, 2, str_val_1);
-  dtostrf(env.getSolarPanelTemperature(), 4, 2, str_val_2);
-
-  prepareSystemUpTime();
-
-  /* Builds the payload with structure:{"inside-temperature":24.75,"outside-temperature":19.19} */
-  char* payload = (char *) malloc(sizeof(char) * 500);
-  sprintf(payload, "{\"");
-  sprintf(payload, "%s%s\":%s", payload, env.boilerTemp.getLabel().c_str(), str_val_1);
-  sprintf(payload, "%s,\"%s\":%s", payload, env.solarPanelTemp.getLabel().c_str(), str_val_2);
-//  if ((env.pumpOnPreviousValue > env.pumpON) || (env.pumpOnPreviousValue < env.pumpON)) {
-    sprintf(payload, "%s,\"%s\":%s", payload, env.pumpStatus.getLabel().c_str(), env.pumpStatus.getStringValue().c_str());
-//    env.pumpOnPreviousValue = env.pumpON;
-//  }
-//  if (env.messages.isEmpty() == false) {
-//    String quotedMessage = String("\"") + env.messages.getStringValue() + String("\"");
-//    sprintf(payload, "%s,\"%s\":%s", payload, env.messages.getLabel().c_str(), quotedMessage.c_str());
-//    env.messages.setStringValue("");
-//  }
-  if (env.controlPanelVariablesChanged.getIntValue() == true) {
-    env.controlPanelVariablesChanged.setIntValue(false);
-    sprintf(payload, "%s,\"%s\":%s", payload, env.controlPanelVariablesChanged.getLabel().c_str(), env.controlPanelVariablesChanged.getStringValue().c_str());
-  }
-  sprintf(payload, "%s,\"%s\":%s", payload, env.systemRunningTime.getLabel().c_str(), env.systemRunningTime.getStringValue().c_str());
-  sprintf(payload, "%s,\"%s\":%s", payload, env.cycles.getLabel().c_str(), env.cycles.getStringValue().c_str());
-  sprintf(payload, "%s}", payload);
-  return payload;
-}
-
-void sendValuesToServer() {
-  if (WiFi.status() != WL_CONNECTED) {
-    return;
-  }
-  char* payload = preparePayload();
-  char* request = (char *) malloc(sizeof(char) * 1000);
-
-  /* Builds the HTTP request to be POST */
-  sprintf(request, "POST /api/v1.6/devices/%s/?force=true HTTP/1.1\r\n", DEVICE_LABEL);
-  sprintf(request, "%sHost: things.ubidots.com\r\n", request);
-  sprintf(request, "%sUser-Agent: %s/%s\r\n", request, USER_AGENT, VERSION);
-  sprintf(request, "%sX-Auth-Token: %s\r\n", request, TOKEN);
-  sprintf(request, "%sConnection: close\r\n", request);
-  sprintf(request, "%sContent-Type: application/json\r\n", request);
-  sprintf(request, "%sContent-Length: %d\r\n\r\n", request, strlen(payload));
-  sprintf(request, "%s%s\r\n", request, payload);
-
-  /* Connecting the client */
-  clientUbi.connect(HTTPSERVER, HTTPPORT);
-  serialPrintF("\n");
-  if (clientUbi.connected()) {
-    /* Sends the request to the client */
-    clientUbi.print(request);
-//    Serial.println("Ubidots - POST Request:");
-//    Serial.println(request);
-  } else {
-    serialPrintF("Connection Failed to Ubidots\n");
-    // force reconnecting
-    WiFi.disconnect();
-  }
-
-  /* While the client is available read the response of the server */
-  while (clientUbi.available()) {
-    char c = clientUbi.read();
-    Serial.write(c);
-    //Serial.print(c); // Uncomment this line to visualize the response on the Serial Monitor
-  }
-
-  /* Free memory */
-  free(request);
-  /* Stop the client */
-  clientUbi.stop();
-
-  serialPrintF("Variables sent to server: \n");
-  serialPrintF(payload);
-  serialPrintF("\n");
-
-  free(payload);
-}
-
-String getServerValue(String variableLabel) {
-  if (WiFi.status() != WL_CONNECTED) {
-    return "";
-  }
-  serialPrintF("Geting %s variable\n", variableLabel);
-
-  // http://things.ubidots.com/api/v1.6/devices/{LABEL_DEVICE}/{VARIABLE_LABEL}/lv
-
-  /* Builds the HTTP request to be POST */
-  char* request = (char *) malloc(sizeof(char) * 1000);
-  sprintf(request, "GET /api/v1.6/devices/%s/%s/lv HTTP/1.1\r\n", DEVICE_LABEL, variableLabel.c_str());
-  sprintf(request, "%sHost: things.ubidots.com\r\n", request);
-  sprintf(request, "%sUser-Agent: %s/%s\r\n", request, USER_AGENT, VERSION);
-  sprintf(request, "%sX-Auth-Token: %s\r\n", request, TOKEN);
-  sprintf(request, "%sConnection: close\r\n", request);
-  sprintf(request, "%s\r\n", request);
-
-  /* Connecting the client */
-  clientUbi.connect(HTTPSERVER, HTTPPORT);
-  if (clientUbi.connected()) {
-    /* Sends the request to the client */
-    clientUbi.print(request);
-//    Serial.println("Ubidots - GET Request:");
-//    Serial.println(request);
-  } else {
-    Serial.println("Connection Failed to Ubidots");
-    // force reconnecting
-    WiFi.disconnect();
-  }
-
-    int timeout = 0;
-    while (!clientUbi.available() && timeout < 999999) {
-        timeout++;
-    }
-    String response;
-    serialPrintInt("  Server timeout: %d\n", timeout);
-    while (clientUbi.available()) {
-//      Serial.println("Reading response. ");
-      response = clientUbi.readString();
-    }
-
-//    Serial.println("response1 {");
-//    Serial.println(response);
-//    Serial.println("}");
-
-    uint8_t bodyPosinit = response.indexOf("\r\n\r\n");
-    response = response.substring(bodyPosinit);
-
-//    Serial.println("response2 {");
-//    Serial.println(response);
-//    Serial.println("}");
-
-    bodyPosinit = 7 + response.indexOf("\r\n");
-    response = response.substring(bodyPosinit);
-    uint8_t bodyPosend = response.indexOf("\r\n");
-    String value = response.substring(0, bodyPosend);
-    serialPrintF("  Retrieved value: %s\n", value);
-    clientUbi.flush();
-    clientUbi.stop();
-
-    free(request);
-
-    return value;
-}
