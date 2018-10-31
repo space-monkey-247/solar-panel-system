@@ -66,7 +66,7 @@ class SolarPanelEnvironment {
     Variable solarPanelMaxTemp = Variable("solar-panel-max-temperature", "98");
     Variable solarPanelMinTemp = Variable("solar-panel-min-temperature", "-10");
 
-    Variable* downloadVariables[10] = {
+    Variable* downloadVariables[8] = {
       &systemMode,
       &targetBoilerTemp,
       &startPump,

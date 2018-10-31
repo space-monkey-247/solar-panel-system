@@ -133,10 +133,10 @@ void Ubidots::reconnect() {
             Serial.println("connected");
             break;
     } else {
-      Serial.print("failed, rc=");
-      Serial.print(_client.state());
-      Serial.println(" try again in 3 seconds");
-      delay(3000);
+        Serial.print("failed, rc=");
+        Serial.print(_client.state());
+        Serial.println(" try again in 3 seconds");
+        delay(3000);
     }
   }
 }

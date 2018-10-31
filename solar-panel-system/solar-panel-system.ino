@@ -332,6 +332,7 @@ void runSystemComputations() {
       break;
   }
 
+  //serialPrintln(" .checkPumpONState ");
   env.checkPumpONState();
   printErrorMessages();
 

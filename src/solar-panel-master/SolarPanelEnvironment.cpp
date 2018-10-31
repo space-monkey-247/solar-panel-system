@@ -17,8 +17,8 @@ bool SolarPanelEnvironment::isPanelSafetyON() {
 }
 
 void SolarPanelEnvironment::checkPumpONState() {
-  if (isPanelSafetyON() == true || 
-		  getSolarPanelTemperature() >= getBoilerTemperature() + start) {
+  if ((isPanelSafetyON() == true) || 
+		  (getSolarPanelTemperature() >= getBoilerTemperature() + start)) {
     // getSolarPanelTemperature() >= 45 + 22.75 = 67.75
 		pumpON = true;
 	}
