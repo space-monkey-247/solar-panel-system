@@ -152,6 +152,8 @@ void mqttSetup() {
 void mqttSubscribeVariables() {
   mqttClient.ubidotsSubscribe((char *)DEVICE_LABEL, "pump-start");
   mqttClient.ubidotsSubscribe((char *)DEVICE_LABEL, "pump-stop");
+  mqttClient.ubidotsSubscribe((char *)DEVICE_LABEL, "solar-panel-index");
+  mqttClient.ubidotsSubscribe((char *)DEVICE_LABEL, "temperature-sensors");
 }
 
 void mqttPublish() {
@@ -270,8 +272,7 @@ void lcdPrint(uint8_t col, uint8_t row, char aChar) {
 //  lcd.print(aChar);
 }
 
-void loop(void)
-{
+void loop(void) {
 
   // try to reconnecting for 3 times
   wifiConnecting(3);
@@ -332,7 +333,6 @@ void runSystemComputations() {
       break;
   }
 
-  //serialPrintln(" .checkPumpONState ");
   env.checkPumpONState();
   printErrorMessages();
 

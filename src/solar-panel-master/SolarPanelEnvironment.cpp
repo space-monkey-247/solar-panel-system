@@ -61,3 +61,29 @@ void SolarPanelEnvironment::init(unsigned long currentMillis) {
       break;
   }
 }
+
+Variable SolarPanelEnvironment::getSolarPanelVariable() {
+  return temperatureSensors[getSolarPanelIndex()];
+}
+
+Variable SolarPanelEnvironment::getBoilerVariable() {
+  int max = -999;
+  Variable maxValueVar;
+  for (int idx = 0; idx < temperatureSensorsSize; idx++) {
+      if (idx == getSolarPanelIndex()) {
+          continue;
+      }
+      Variable var = temperatureSensors[idx];
+      
+      int value = var.getIntValue();
+      if (value > max) {
+          maxValueVar = var;
+          max = value;
+      }            
+  }
+  return maxValueVar;
+}
+
+int SolarPanelEnvironment::getSolarPanelIndex() {
+  return solarPanelIndex.getIntValue() - 1;
+}

@@ -26,16 +26,18 @@ class SolarPanelEnvironment {
     Variable boilerTemp = Variable("boiler-temperature", "0");
     Variable pumpStatus = Variable("pump-status", "0");
 
-    // Variable* downloadVariables[10] = {
-    //   &Variable("boiler-temperature1", "0"),
-    //   &Variable("boiler-temperature2", "0"),
-    //   &Variable("boiler-temperature3", "0")
-    // };
+    Variable temperatureSensors[4] = {
+      Variable("temperature-sensor-1", "0"),
+      Variable("temperature-sensor-2", "0"),
+      Variable("temperature-sensor-3", "0"),
+      Variable("temperature-sensor-4", "0")
+    };
+	  int temperatureSensorsSize = sizeof(temperatureSensors) / sizeof(temperatureSensors[0]);
 
-    // control panel
-    bool firstRun = true;
-    Variable controlPanelVariablesChanged = Variable("control-panel-variables-changed", "1");
-
+    Variable getSolarPanelVariable();
+    Variable getBoilerVariable();
+    int getSolarPanelIndex();
+    
     /**
     SystemMode {
        0 OFF      #ff2500
@@ -51,7 +53,7 @@ class SolarPanelEnvironment {
     Variable cycles = Variable("cycle-number", "0");
     Variable messages = Variable("messages");
     Variable solarPanelIndex = Variable("solar-panel-index", "1");
-    Variable boilerTemperatureSensors = Variable("boiler-temperature-sensors", "3");
+    Variable boilerTemperatureSensors = Variable("temperature-sensors", "3");
 
     // running
     Variable targetBoilerTemp = Variable("target-boiler-temperature", "65");
@@ -66,11 +68,13 @@ class SolarPanelEnvironment {
     Variable solarPanelMaxTemp = Variable("solar-panel-max-temperature", "98");
     Variable solarPanelMinTemp = Variable("solar-panel-min-temperature", "-10");
 
-    Variable* downloadVariables[8] = {
+    Variable* downloadVariables[10] = {
       &systemMode,
       &targetBoilerTemp,
       &startPump,
       &stopPump,
+      &solarPanelIndex,
+      &boilerTemperatureSensors,
       &alterBoilerTemp,
       &alterSolarPanelTemp,
       &solarPanelMaxTemp,
