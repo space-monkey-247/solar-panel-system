@@ -155,7 +155,9 @@ void mqttSubscribeVariables() {
   mqttClient.ubidotsSubscribe((char *)DEVICE_LABEL, "pump-start");
   mqttClient.ubidotsSubscribe((char *)DEVICE_LABEL, "pump-stop");
   mqttClient.ubidotsSubscribe((char *)DEVICE_LABEL, "solar-panel-index");
-  mqttClient.ubidotsSubscribe((char *)DEVICE_LABEL, "temperature-sensors");
+  mqttClient.ubidotsSubscribe((char *)DEVICE_LABEL, "sensors-number");
+  // mqttClient.ubidotsSubscribe((char *)DEVICE_LABEL, "alter-solar-panel-temperature");
+  // mqttClient.ubidotsSubscribe((char *)DEVICE_LABEL, "alter-boiler-temperature");
 }
 
 void mqttPublish() {
@@ -470,7 +472,9 @@ void readTemperatures() {
       float temp2 = sensors.getTempCByIndex(idx);
       env.getSolarPanelVariable().setFloatValue(temp2);
       // serialPrintFloat(" Solar panel temperature is: %.2f\n", temp2);
-      serialPrint(" Solar panel temperature is: ");
+      serialPrint("sensor[");
+      serialPrint(String(idx + 1));
+      serialPrint("] - Solar panel temperature is: ");
       serialPrintln(String(temp2));
 
       lcdPrint(0, 1, "Panel:    " + String(temp2) + " C");
@@ -481,9 +485,9 @@ void readTemperatures() {
       float temp1 = sensors.getTempCByIndex(idx);
       env.temperatureSensors[idx].setFloatValue(temp1);
       // serialPrintFloat(" Boiler temperature is: %.2f\n", temp1);
-      serialPrint(" Boiler temperature[");
+      serialPrint("sensor[");
       serialPrint(String(idx + 1));
-      serialPrint("] is: ");
+      serialPrint("] - Boiler temperature is: ");
       serialPrintln(String(temp1));
 
       lcdPrint(0, 0, "Boiler:   " + String(temp1) + " C");
@@ -534,12 +538,17 @@ void mqttPublishValues() {
 
 void prepareMqttPublishValues() {
   serialPrintln("Prepare MQTT publishing values:");
-  
+/*  
 //  serialPrintVariable(env.boilerTemp);
   mqttClient.add(stringToChar(env.getBoilerVariable().getLabel()), env.getBoilerTemperature());
 //  serialPrintVariable(env.solarPanelTemp);
   mqttClient.add(stringToChar(env.getSolarPanelVariable().getLabel()), env.getSolarPanelTemperature());
+*/
 
+  for (int idx = 0; idx < env.temperatureSensorsSize; idx++) {
+    Variable var = env.temperatureSensors[idx];
+    mqttClient.add(stringToChar(var.getLabel()), var.getFloatValue());
+  }
   mqttPublishValues();
 
 //  serialPrintVariable(env.pumpStatus);

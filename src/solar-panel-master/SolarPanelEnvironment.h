@@ -53,7 +53,7 @@ class SolarPanelEnvironment {
     Variable cycles = Variable("cycle-number", "0");
     Variable messages = Variable("messages");
     Variable solarPanelIndex = Variable("solar-panel-index", "1");
-    Variable boilerTemperatureSensors = Variable("temperature-sensors", "3");
+    Variable boilerTemperatureSensors = Variable("sensors-number", "2");
 
     // running
     Variable targetBoilerTemp = Variable("target-boiler-temperature", "65");
