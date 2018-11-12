@@ -127,18 +127,20 @@ bool Ubidots::loop() {
 
 
 void Ubidots::reconnect() {
-    while (!_client.connected()) {
+    int times = 0;
+    while (!_client.connected() && times < 10) {
         Serial.print("Attempting MQTT connection...");
         if (_client.connect(_clientName, _token, NULL)) {
             Serial.println("connected");
             break;
-    } else {
-        Serial.print("failed, rc=");
-        Serial.print(_client.state());
-        Serial.println(" try again in 3 seconds");
-        delay(3000);
+        } else {
+            Serial.print("failed, rc=");
+            Serial.print(_client.state());
+            Serial.println(" try again in 3 seconds");
+            delay(3000);
+        }
+        times++;
     }
-  }
 }
 
 void Ubidots::disconnect() {
@@ -254,9 +256,14 @@ bool Ubidots::ubidotsPublishOnlyValues(char *deviceLabel, bool freeMemory) {
 
 bool Ubidots::wifiConnection(char* ssid, char* pass) {
     WiFi.begin(ssid, pass);
-    while (WiFi.status() != WL_CONNECTED) {
+    int times = 0;
+    while (WiFi.status() != WL_CONNECTED && times < 90) {
         delay(500);
         Serial.print(".");
+        times++;
+    }
+    if (WiFi.status() != WL_CONNECTED) {
+        return false;
     }
     Serial.println(F("WiFi connected"));
     Serial.println(F("IP address: "));
@@ -264,4 +271,5 @@ bool Ubidots::wifiConnection(char* ssid, char* pass) {
     if(_clientName==NULL){
         _clientName = getMac();
     }
+    return true;
 }

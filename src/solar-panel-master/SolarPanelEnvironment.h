@@ -27,10 +27,10 @@ class SolarPanelEnvironment {
     Variable pumpStatus = Variable("pump-status", "0");
 
     Variable temperatureSensors[4] = {
-      Variable("temperature-sensor-1", "0"),
-      Variable("temperature-sensor-2", "0"),
-      Variable("temperature-sensor-3", "0"),
-      Variable("temperature-sensor-4", "0")
+      Variable("sensor-1", "0"),
+      Variable("sensor-2", "0"),
+      Variable("sensor-3", "0"),
+      Variable("sensor-4", "0")
     };
 	  int temperatureSensorsSize = sizeof(temperatureSensors) / sizeof(temperatureSensors[0]);
 

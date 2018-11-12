@@ -144,9 +144,11 @@ void updateVariableByRef(Variable& variable, String stringValue) {
 
 void mqttSetup() {
   mqttClient.setDebug(true); // Pass a true or false bool value to activate debug messages
-  mqttClient.wifiConnection((char *)SSID_NAME, (char *)SSID_PASS);
-  mqttClient.begin(callback);
-  mqttSubscribeVariables();
+  bool connected = mqttClient.wifiConnection((char *)SSID_NAME, (char *)SSID_PASS);
+  if (connected) {
+    mqttClient.begin(callback);
+    mqttSubscribeVariables();
+  }
 }
 
 void mqttSubscribeVariables() {
@@ -160,10 +162,19 @@ void mqttPublish() {
   serialPrintln("");
   
   if (!mqttClient.connected()) {
-    serialPrintln("MQTT Client: reconnect");
-    mqttClient.reconnect();
-    mqttClient.begin(callback);
-    mqttSubscribeVariables();
+//    bool connected = mqttClient.wifiConnection((char *)SSID_NAME, (char *)SSID_PASS);
+//    if (!connected) {
+//      serialPrintln("MQTT Client: reconnect");
+//      mqttClient.reconnect();
+//    }
+    // serialPrintln("MQTT Client: reconnect");
+    // mqttClient.reconnect();
+    mqttSetup();
+    if (!mqttClient.connected()) {
+      // force reconnecting
+      WiFi.disconnect();
+      mqttClient.disconnect();
+    }
   }
 
   // skip publishing
@@ -176,19 +187,21 @@ void mqttPublish() {
   
   mqttClient.loop();
 
-  // reconnect at x minutes
-  int reconnectMinutes = 30;
-  long reconnectCycles = (long) reconnectMinutes * 60 * 1000 / env.DEFAULT_READ_INTERVAL;
-  bool scheduledReconnect = env.cycleNo % reconnectCycles == 0;
+//  scheduledReconnect(60);
+}
 
-  if (scheduledReconnect) {
+void scheduledReconnect(int reconnectMinutes) {
+  // reconnect at x minutes
+  long reconnectCycles = (long) reconnectMinutes * 60 * 1000 / env.DEFAULT_READ_INTERVAL;
+  bool reconnect = env.cycleNo % reconnectCycles == 0;
+
+  if (reconnect) {
     serialPrintln("MQTT Client: scheduled reconnect");
     // force reconnecting
     WiFi.disconnect();
     mqttClient.disconnect();
   }
 }
-
 void serialSetup() {
   // start serial port
   Serial.begin(115200);
@@ -450,28 +463,34 @@ void readTemperatures() {
   sensors.requestTemperatures();
   //Serial.println("DONE");
 
-  /*** boiler *****************************************************************/
-  float temp1 = sensors.getTempCByIndex(0);
-  env.boilerTemp.setFloatValue(temp1);
-//  serialPrintFloat(" Boiler temperature is: %.2f\n", temp1);
-  serialPrint(" Boiler temperature is: ");
-  serialPrintln(String(temp1));
+  for (int idx = 0; idx < env.boilerTemperatureSensors.getIntValue(); idx++) {
+    if (env.getSolarPanelIndex() == idx) {
+      /*** solar panel *************************************************************/
+      // float temp2 = sensors.getTempCByIndex(env.solarPanelIndex.getIntValue());
+      float temp2 = sensors.getTempCByIndex(idx);
+      env.getSolarPanelVariable().setFloatValue(temp2);
+      // serialPrintFloat(" Solar panel temperature is: %.2f\n", temp2);
+      serialPrint(" Solar panel temperature is: ");
+      serialPrintln(String(temp2));
 
-  lcdPrint(0, 0, "Boiler:   " + String(temp1) + " C");
-  // celsius sign
-  lcdPrint(15, 0, (char)223);
+      lcdPrint(0, 1, "Panel:    " + String(temp2) + " C");
+      // celsius sign
+      lcdPrint(15, 1, (char)223);
+    } else {
+      /*** boiler *****************************************************************/
+      float temp1 = sensors.getTempCByIndex(idx);
+      env.temperatureSensors[idx].setFloatValue(temp1);
+      // serialPrintFloat(" Boiler temperature is: %.2f\n", temp1);
+      serialPrint(" Boiler temperature[");
+      serialPrint(String(idx + 1));
+      serialPrint("] is: ");
+      serialPrintln(String(temp1));
 
-  /*** solar panel *************************************************************/
-//  float temp2 = sensors.getTempCByIndex(env.solarPanelIndex.getIntValue());
-  float temp2 = sensors.getTempCByIndex(1);
-  env.solarPanelTemp.setFloatValue(temp2);
-//  serialPrintFloat(" Solar panel temperature is: %.2f\n", temp2);
-  serialPrint(" Solar panel temperature is: ");
-  serialPrintln(String(temp2));
-
-  lcdPrint(0, 1, "Panel:    " + String(temp2) + " C");
-  // celsius sign
-  lcdPrint(15, 1, (char)223);
+      lcdPrint(0, 0, "Boiler:   " + String(temp1) + " C");
+      // celsius sign
+      lcdPrint(15, 0, (char)223);
+    }
+  }
 }
 
 void prepareSystemUpTime() {
@@ -517,9 +536,9 @@ void prepareMqttPublishValues() {
   serialPrintln("Prepare MQTT publishing values:");
   
 //  serialPrintVariable(env.boilerTemp);
-  mqttClient.add(stringToChar(env.boilerTemp.getLabel()), env.getBoilerTemperature());
+  mqttClient.add(stringToChar(env.getBoilerVariable().getLabel()), env.getBoilerTemperature());
 //  serialPrintVariable(env.solarPanelTemp);
-  mqttClient.add(stringToChar(env.solarPanelTemp.getLabel()), env.getSolarPanelTemperature());
+  mqttClient.add(stringToChar(env.getSolarPanelVariable().getLabel()), env.getSolarPanelTemperature());
 
   mqttPublishValues();
 
