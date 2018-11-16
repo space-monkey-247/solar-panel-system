@@ -7,24 +7,27 @@
 #include <UbidotsESPMQTT.h>
 #include <SolarPanelEnvironment.h>
 
-bool SERIAL_COMMUNICATION_ENABLED = true;
+bool SERIAL_COMMUNICATION_ENABLED = false;
 
 /**** Wifi Endava ******************************************************************/
 //const char* SSID_NAME = "endava-byod";
 //const char* SSID_PASS = "Agile-Transformation-Innovative-Solutions";
 /**** Rooter Bogdan ****************************************************************/
-const char* SSID_NAME = "Telekom-rOlKBz";
-const char* SSID_PASS = "36kexrah4e1s";
+//const char* SSID_NAME = "Telekom-rOlKBz";
+//const char* SSID_PASS = "36kexrah4e1s";
 /**** Hotspot Tudor ****************************************************************/
 // const char* SSID_NAME = "Tudor Hotspot";
 // const char* SSID_PASS = "Tudor123!";
+/**** Hotspot Tudor ****************************************************************/
+const char* SSID_NAME = "HUAWEI-B310-5E3F";
+const char* SSID_PASS = "0AYGBJ9E8EQ";
 
 
 const char* TOKEN = "A1E-Brpd96xLq77tUwPkpXsXvCHCzdX4dZ";
 // device label artan
-//const char* DEVICE_LABEL = "wemos-d1-mini";
+const char* DEVICE_LABEL = "wemos-d1-mini";
 // device label artan
-const char* DEVICE_LABEL = "solar-panel-test-env";
+//const char* DEVICE_LABEL = "solar-panel-test-env";
 const char* USER_AGENT = "ESP8266";
 const char* VERSION = "1.0";
 const char* HTTPSERVER = "things.ubidots.com";
@@ -545,9 +548,15 @@ void prepareMqttPublishValues() {
   mqttClient.add(stringToChar(env.getSolarPanelVariable().getLabel()), env.getSolarPanelTemperature());
 */
 
-  for (int idx = 0; idx < env.temperatureSensorsSize; idx++) {
+  for (int idx = 0; idx < env.boilerTemperatureSensors.getIntValue(); idx++) {
     Variable var = env.temperatureSensors[idx];
-    mqttClient.add(stringToChar(var.getLabel()), var.getFloatValue());
+    float alterValue = 0;
+    if (idx == env.getSolarPanelIndex()) {
+      alterValue = env.alterSolarPanelTemp.getFloatValue();
+    } else {
+      alterValue = env.alterBoilerTemp.getFloatValue();
+    }
+    mqttClient.add(stringToChar(var.getLabel()), alterValue);
   }
   mqttPublishValues();
 
