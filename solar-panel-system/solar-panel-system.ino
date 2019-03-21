@@ -66,7 +66,7 @@ void setup(void) {
   wifiSetup();
   mqttSetup();
   pumpRelaySetup();
-//  lcdSetup();
+  //  lcdSetup();
 
   env.init(millis());
 }
@@ -80,34 +80,34 @@ void callback(char* topic, byte* payload, unsigned int length) {
   serialPrint(" topic: [");
   serialPrint(String(topic));
   serialPrintln("] ");
-  
+
   serialPrint(" length: ");
   serialPrintln(String(length));
 
   serialPrint(" payload: [");
-  for (int i=0; i<length; i++) {
+  for (int i = 0; i < length; i++) {
     serialPrint(String((char)payload[i]));
   }
   serialPrintln("]");
 
-  String label = extractLabel(topic); 
-  String value = extractValue(payload, length); 
+  String label = extractLabel(topic);
+  String value = extractValue(payload, length);
 
   if (label == "NULL") {
     serialPrintln(" Label is NULL");
     return;
   }
 
-//  serialPrintln(" Check all the downloadVariables");
+  //  serialPrintln(" Check all the downloadVariables");
   for (int idx = 0; idx < env.downloadVariablesSize; idx++) {
-//    serialPrintVariable(*env.downloadVariables[idx]);
+    //    serialPrintVariable(*env.downloadVariables[idx]);
     Variable& variable = *env.downloadVariables[idx];
     if (variable.getLabel().equalsIgnoreCase(label)) {
       updateVariableByRef(variable, value);
       break;
     }
   }
- }
+}
 
 String extractValue(byte* payload, unsigned int length) {
   // char* charArrayPayload = (char*) payload;
@@ -116,7 +116,7 @@ String extractValue(byte* payload, unsigned int length) {
   // Serial.print(charArrayPayload);
   // Serial.println("]");
   String value = "";
-  for (int i=0; i<length; i++) {
+  for (int i = 0; i < length; i++) {
     value.concat(String((char)payload[i]));
   }
   serialPrintF(" value: %s\n", value);
@@ -136,12 +136,12 @@ String extractLabel(char* topic) {
 
 void updateVariableByRef(Variable& variable, String stringValue) {
   serialPrintCalculatedValue("existing value", variable.getStringValue());
-//  Serial.println(variable.getLabel() + " before: " + variable.getStringValue());
+  //  Serial.println(variable.getLabel() + " before: " + variable.getStringValue());
 
   if (stringValue != NULL && stringValue.length() > 0) {
     variable.setStringValue(stringValue);
-//    Serial.println(variable.getLabel() + " after1: " + variable.getStringValue());
-//    Serial.println(variable.getLabel() + " after2: " + String(variable.getFloatValue()));
+    //    Serial.println(variable.getLabel() + " after1: " + variable.getStringValue());
+    //    Serial.println(variable.getLabel() + " after2: " + String(variable.getFloatValue()));
   }
 }
 
@@ -165,13 +165,13 @@ void mqttSubscribeVariables() {
 
 void mqttPublish() {
   serialPrintln("");
-  
+
   if (!mqttClient.connected()) {
-//    bool connected = mqttClient.wifiConnection((char *)SSID_NAME, (char *)SSID_PASS);
-//    if (!connected) {
-//      serialPrintln("MQTT Client: reconnect");
-//      mqttClient.reconnect();
-//    }
+    //    bool connected = mqttClient.wifiConnection((char *)SSID_NAME, (char *)SSID_PASS);
+    //    if (!connected) {
+    //      serialPrintln("MQTT Client: reconnect");
+    //      mqttClient.reconnect();
+    //    }
     // serialPrintln("MQTT Client: reconnect");
     // mqttClient.reconnect();
     mqttSetup();
@@ -189,10 +189,10 @@ void mqttPublish() {
     serialPrint(" Skip publishing for cycle: ");
     serialPrintln(String(env.cycleNo));
   }
-  
+
   mqttClient.loop();
 
-//  scheduledReconnect(60);
+  //  scheduledReconnect(60);
 }
 
 void scheduledReconnect(int reconnectMinutes) {
@@ -274,30 +274,30 @@ void oneWireSensorsSetup() {
 //#define BACKLIGHT_PIN     13
 void lcdSetup() {
   // initialize the LCD
-//  lcd.init();
+  //  lcd.init();
 
   // Turn on the backlight.
-//  lcd.backlight();
+  //  lcd.backlight();
 }
 
 void lcdPrint(uint8_t col, uint8_t row, String text) {
-//  lcd.setCursor(col, row);
-//  lcd.print(text);
+  //  lcd.setCursor(col, row);
+  //  lcd.print(text);
 }
 
 void lcdPrint(uint8_t col, uint8_t row, char aChar) {
-//  lcd.setCursor(col, row);
-//  lcd.print(aChar);
+  //  lcd.setCursor(col, row);
+  //  lcd.print(aChar);
 }
 
 void loop(void) {
 
   // try to reconnecting for 3 times
   wifiConnecting(3);
-  
+
   // read temperature of wired devices
   readTemperatures();
-  
+
   // pump switch on/off based on the environment variables
   runSystemComputations();
   updateThePumpStatus();
@@ -384,7 +384,7 @@ void serialPrintF(const char* formatedMessage) {
   if (!SERIAL_COMMUNICATION_ENABLED) {
     return;
   }
-//  Serial.print(F(formatedMessage));
+  //  Serial.print(F(formatedMessage));
   char* str = (char *) malloc(sizeof(char) * 255);
   sprintf(str, formatedMessage);
   Serial.printf(str);
@@ -395,7 +395,7 @@ void serialPrintF(const char* formatedMessage, String strValue) {
   if (!SERIAL_COMMUNICATION_ENABLED) {
     return;
   }
-//  Serial.print(F(formatedMessage));
+  //  Serial.print(F(formatedMessage));
   char* str = (char *) malloc(sizeof(char) * 255);
   sprintf(str, formatedMessage, strValue.c_str());
   Serial.printf(str);
@@ -473,7 +473,8 @@ void readTemperatures() {
       /*** solar panel *************************************************************/
       // float temp2 = sensors.getTempCByIndex(env.solarPanelIndex.getIntValue());
       float temp2 = sensors.getTempCByIndex(idx);
-      env.getSolarPanelVariable().setFloatValue(temp2);
+//      env.getSolarPanelVariable().setFloatValue(temp2);
+      env.temperatureSensors[idx].setFloatValue(temp2);
       // serialPrintFloat(" Solar panel temperature is: %.2f\n", temp2);
       serialPrint("sensor[");
       serialPrint(String(idx + 1));
@@ -520,8 +521,8 @@ void prepareSystemUpTime() {
 
 char* stringToChar(String stringValue) {
   char* str = (char *) malloc(sizeof(char) * 255);
-//  sprintf(str, "%s", stringValue.c_str());
-//  strcpy(str, stringValue.c_str());
+  //  sprintf(str, "%s", stringValue.c_str());
+  //  strcpy(str, stringValue.c_str());
   stringValue.toCharArray(str, 255);
   return str;
 }
@@ -541,30 +542,32 @@ void mqttPublishValues() {
 
 void prepareMqttPublishValues() {
   serialPrintln("Prepare MQTT publishing values:");
-/*  
-//  serialPrintVariable(env.boilerTemp);
-  mqttClient.add(stringToChar(env.getBoilerVariable().getLabel()), env.getBoilerTemperature());
-//  serialPrintVariable(env.solarPanelTemp);
-  mqttClient.add(stringToChar(env.getSolarPanelVariable().getLabel()), env.getSolarPanelTemperature());
-*/
+  /*
+    //  serialPrintVariable(env.boilerTemp);
+    mqttClient.add(stringToChar(env.getBoilerVariable().getLabel()), env.getBoilerTemperature());
+    //  serialPrintVariable(env.solarPanelTemp);
+    mqttClient.add(stringToChar(env.getSolarPanelVariable().getLabel()), env.getSolarPanelTemperature());
+  */
 
   for (int idx = 0; idx < env.boilerTemperatureSensors.getIntValue(); idx++) {
     Variable var = env.temperatureSensors[idx];
-    float alterValue = 0;
+    float value = 0;
     if (idx == env.getSolarPanelIndex()) {
-      alterValue = env.alterSolarPanelTemp.getFloatValue();
+      value = env.getSolarPanelTemperature();
+      //value = env.getSolarPanelVariable().getFloatValue();
     } else {
-      alterValue = env.alterBoilerTemp.getFloatValue();
+      value = env.getBoilerTemperature();
+      //value = env.getBoilerVariable().getFloatValue();
     }
     mqttClient.add(stringToChar(var.getLabel()), alterValue);
   }
   mqttPublishValues();
 
-//  serialPrintVariable(env.pumpStatus);
+  //  serialPrintVariable(env.pumpStatus);
   mqttClient.add(stringToChar(env.pumpStatus.getLabel()), env.pumpStatus.getFloatValue());
-//  serialPrintVariable(env.systemRunningTime);
+  //  serialPrintVariable(env.systemRunningTime);
   mqttClient.add(stringToChar(env.systemRunningTime.getLabel()), env.systemRunningTime.getFloatValue());
-//  serialPrintVariable(env.cycles);
+  //  serialPrintVariable(env.cycles);
   mqttClient.add(stringToChar(env.cycles.getLabel()), env.cycles.getFloatValue());
 
   mqttPublishValues();
