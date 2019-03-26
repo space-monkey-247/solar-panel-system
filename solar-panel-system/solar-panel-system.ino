@@ -7,30 +7,52 @@
 #include <UbidotsESPMQTT.h>
 #include <SolarPanelEnvironment.h>
 
-bool SERIAL_COMMUNICATION_ENABLED = false;
+bool SERIAL_COMMUNICATION_ENABLED = true;
 
 /**** Wifi Endava ******************************************************************/
 //const char* SSID_NAME = "endava-byod";
 //const char* SSID_PASS = "Agile-Transformation-Innovative-Solutions";
 /**** Rooter Bogdan ****************************************************************/
-//const char* SSID_NAME = "Telekom-rOlKBz";
-//const char* SSID_PASS = "36kexrah4e1s";
+const char* SSID_NAME = "Telekom-rOlKBz";
+const char* SSID_PASS = "36kexrah4e1s";
 /**** Hotspot Tudor ****************************************************************/
 // const char* SSID_NAME = "Tudor Hotspot";
 // const char* SSID_PASS = "Tudor123!";
 /**** Hotspot Tudor ****************************************************************/
-const char* SSID_NAME = "HUAWEI-B310-5E3F";
-const char* SSID_PASS = "0AYGBJ9E8EQ";
+//const char* SSID_NAME = "HUAWEI-B310-5E3F";
+//const char* SSID_PASS = "0AYGBJ9E8EQ";
 
+int ubidotsProfileIndex = 0;
+int thingsProfileIndex = 0;
+const int PROFILE = "solarubidots";
 
+char* servers[2] = {
+  "things.ubidots.com",
+  "mqtt.thingspeak.com"
+}
+
+const char* UBIDOTS_PROFILE = "ubidots";
+const char* THINGSPEAK_PROFILE = "thingspeak";
+const char* ACTIVE_PROFILE = UBIDOTS_PROFILE;
+
+// test
+// const char* TOKEN = "A1E-Brpd96xLq77tUwPkpXsXvCHCzdX4dZ";
+// const char* DEVICE_LABEL = "solar-panel-test-env";
+// const char* HTTPSERVER = "things.ubidots.com";
+
+// artan
+// const char* TOKEN = "A1E-Brpd96xLq77tUwPkpXsXvCHCzdX4dZ";
+// const char* DEVICE_LABEL = "wemos-d1-mini";
+// const char* HTTPSERVER = "things.ubidots.com";
+
+// robert
 const char* TOKEN = "A1E-Brpd96xLq77tUwPkpXsXvCHCzdX4dZ";
-// device label artan
-const char* DEVICE_LABEL = "wemos-d1-mini";
-// device label artan
-//const char* DEVICE_LABEL = "solar-panel-test-env";
+const char* DEVICE_LABEL = "green-house-project";
+const char* HTTPSERVER = "mqtt.thingspeak.com";
+
+// common
 const char* USER_AGENT = "ESP8266";
 const char* VERSION = "1.0";
-const char* HTTPSERVER = "things.ubidots.com";
 int HTTPPORT = 80;
 
 // Pump relay pin
@@ -72,6 +94,10 @@ void setup(void) {
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
+  if (ACTIVE_PROFILE == THINGSPEAK_PROFILE) {
+    return;
+  }
+
   serialPrintln("");
   serialPrintln("Message arrived");
 
@@ -147,14 +173,18 @@ void updateVariableByRef(Variable& variable, String stringValue) {
 
 void mqttSetup() {
   mqttClient.setDebug(true); // Pass a true or false bool value to activate debug messages
+  mqttClient.ubidotsSetBroker(HTTPSERVER);
   bool connected = mqttClient.wifiConnection((char *)SSID_NAME, (char *)SSID_PASS);
-  if (connected) {
+  if (connected && ACTIVE_PROFILE == UBIDOTS_PROFILE) {
     mqttClient.begin(callback);
     mqttSubscribeVariables();
   }
 }
 
 void mqttSubscribeVariables() {
+  if (ACTIVE_PROFILE == THINGSPEAK_PROFILE) {
+    return;
+  }
   mqttClient.ubidotsSubscribe((char *)DEVICE_LABEL, "pump-start");
   mqttClient.ubidotsSubscribe((char *)DEVICE_LABEL, "pump-stop");
   mqttClient.ubidotsSubscribe((char *)DEVICE_LABEL, "solar-panel-index");
@@ -216,6 +246,10 @@ void serialSetup() {
 }
 
 void pumpRelaySetup() {
+  if (ACTIVE_PROFILE == THINGSPEAK_PROFILE) {
+    return;
+  }
+
   pinMode(PUMP_RELAY_PIN , OUTPUT);
   // turn the pump off by default
   digitalWrite(PUMP_RELAY_PIN , HIGH);
@@ -559,7 +593,7 @@ void prepareMqttPublishValues() {
       value = env.getBoilerTemperature();
       //value = env.getBoilerVariable().getFloatValue();
     }
-    mqttClient.add(stringToChar(var.getLabel()), alterValue);
+    mqttClient.add(stringToChar(var.getLabel()), value);
   }
   mqttPublishValues();
 
